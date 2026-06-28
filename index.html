@@ -524,7 +524,7 @@
         document.getElementById('cust-whatsapp').addEventListener('input', updateCart);
 
         // Submit Booking ke Google Sheets & Local Cache
-        function submitBooking() {
+      function submitBooking() {
             const name = document.getElementById('cust-name').value.trim();
             const whatsapp = document.getElementById('cust-whatsapp').value.trim();
             const totalStr = document.getElementById('cart-total').innerText;
@@ -549,23 +549,27 @@
             });
             localStorage.setItem('s_one_bookings', JSON.stringify(bookings));
 
-            // Siapkan payload form data
-            const formData = new URLSearchParams();
-            formData.append('Timestamp', new Date().toLocaleString('id-ID'));
-            formData.append('Nama', name);
-            formData.append('WhatsApp', whatsapp);
-            formData.append('Capster', capsterData[selectedCapster].name);
-            formData.append('Layanan', servicesStr);
-            formData.append('Tanggal', selectedDate);
-            formData.append('Jam', selectedTime);
-            formData.append('Metode_Pembayaran', selectedPayment);
-            formData.append('Total', totalStr);
+            // Format data dengan URL Encoded (Format paling aman & kompatibel)
+            const postData = new URLSearchParams({
+                'Timestamp': new Date().toLocaleString('id-ID'),
+                'Nama': name,
+                'WhatsApp': whatsapp,
+                'Capster': capsterData[selectedCapster].name,
+                'Layanan': servicesStr,
+                'Tanggal': selectedDate,
+                'Jam': selectedTime,
+                'Metode_Pembayaran': selectedPayment,
+                'Total': totalStr
+            }).toString();
 
             // POST ke Google Apps Script
             fetch(SCRIPT_URL, {
                 method: 'POST',
                 mode: 'no-cors',
-                body: formData
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: postData
             })
             .then(() => {
                 // Sembunyikan container QRIS jika sebelumnya terbuka
@@ -583,7 +587,7 @@
             })
             .catch(error => {
                 console.error('Error!', error.message);
-                alert("Gagal terhubung dengan server Google Sheets, namun data Anda berhasil tersimpan lokal di peranti ini.");
+                alert("Gagal terhubung dengan server Google Sheets.");
             })
             .finally(() => {
                 submitBtn.innerText = "Booking Sekarang";
@@ -591,43 +595,3 @@
                 updateCart();
             });
         }
-
-        // Tutup Modal dan Reset Form
-        function closeModal() {
-            document.getElementById('success-modal').classList.add('hidden');
-            
-            selectedCapster = '';
-            selectedServices = [];
-            selectedDate = '';
-            selectedTime = '';
-            selectedPayment = '';
-
-            document.getElementById('cust-name').value = '';
-            document.getElementById('cust-whatsapp').value = '';
-            document.getElementById('booking-date').value = '';
-
-            document.querySelectorAll('.capster-btn').forEach(btn => {
-                btn.classList.remove('border-brandYellow', 'bg-yellow-50/50');
-                btn.classList.add('border-slate-200', 'bg-white');
-            });
-
-            document.querySelectorAll('.pay-btn').forEach(btn => {
-                btn.classList.remove('border-brandYellow', 'bg-yellow-50/50');
-                btn.classList.add('border-slate-200', 'bg-white');
-            });
-
-            document.getElementById('services-section').classList.add('hidden');
-            document.getElementById('datetime-section').classList.add('hidden');
-            document.getElementById('customer-section').classList.add('hidden');
-            
-            renderLiveOverview();
-            updateCart();
-        }
-
-        // Inisialisasi Tampilan Awal
-        window.onload = function() {
-            renderLiveOverview();
-        };
-    </script>
-</body>
-</html>
