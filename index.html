@@ -189,13 +189,13 @@
             </div>
         </section>
 
-        <!-- FITUR DIAGNOSTIK KONEKSI DATABASE (UNTUK TRACKING JALUR DATA) -->
+        <!-- FITUR DIAGNOSTIK KONEKSI DATABASE -->
         <div class="m-4 p-3.5 bg-slate-900 text-green-400 rounded-xl font-mono text-[10px] space-y-1 shadow-inner">
-            <p class="font-bold text-yellow-400 border-b border-slate-800 pb-1 flex items-center justify-between">
+            <p class="font-bold text-brandYellow border-b border-slate-800 pb-1 flex items-center justify-between">
                 <span>🔧 PANEL DIAGNOSTIK DATABASE</span>
                 <span class="animate-pulse" id="debug-dot">●</span>
             </p>
-            <p>• Status Koneksi: <span id="debug-status" class="text-yellow-300 font-bold">Menghubungkan...</span></p>
+            <p>• Status Koneksi: <span id="debug-status" class="text-yellow-400 font-bold">Menghubungkan...</span></p>
             <p id="debug-info" class="text-slate-400">• Log: Menunggu aksi pengguna.</p>
         </div>
 
@@ -235,7 +235,7 @@
     <!-- SCRIPT UTAMA JAVASCRIPT -->
     <script>
         // ========================================================
-        // TEMPELKAN URL WEB APP YANG ANDA SALIN PADA TAHAP 1 DI SINI:
+        // Tautat API Google Web App Anda (Tanda titik di akhir telah dibersihkan)
         // ========================================================
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyfNQQRi-oIXeozK2Qqh_VrqC5HA-UTS3Okj3dwjwy4Tyx4Y0eQWW9rgd1pGbmjDAUZ/exec";
 
@@ -362,10 +362,10 @@
             }
         }
 
-// AMBIL DATA ONLINE LANGSUNG DARI GOOGLE SHEET (DENGAN SYSTEM ANTI-CACHE BROWSER)
+        // AMBIL DATA ONLINE LANGSUNG DARI GOOGLE SHEET (DENGAN SYSTEM ANTI-CACHE BROWSER)
         function fetchGlobalBookings() {
-            // Validasi kebal bug "Replace All" otomatis
-            if (!SCRIPT_URL || SCRIPT_URL.includes("https://script.google.com/macros/s/AKfycbyfNQQRi-oIXeozK2Qqh_VrqC5HA-UTS3Okj3dwjwy4Tyx4Y0eQWW9rgd1pGbmjDAUZ/exec") || SCRIPT_URL.trim() === "" || !SCRIPT_URL.includes("script.google.com")) {
+            // Validasi kebal dari kesalahan search & replace otomatis
+            if (!SCRIPT_URL || SCRIPT_URL.includes("TEMPEL_URL") || SCRIPT_URL.trim() === "" || !SCRIPT_URL.includes("script.google.com")) {
                 setDatabaseLog("Mode Offline / Belum diatur", "Tautan SCRIPT_URL belum dikonfigurasi dengan benar.", null);
                 renderLiveOverview();
                 renderTimeSlots();
@@ -402,23 +402,23 @@
                             globalBookings.push({
                                 date: dateStr,
                                 time: hour,
-                                  capster: capsterKey
-                                });
+                                capster: capsterKey
                             });
                         });
-                        setDatabaseLog("Terhubung (Online)", `Berhasil memuat ${data.length} baris booking dari Google Sheets secara real-time.`, true);
-                        renderLiveOverview();
-                        renderTimeSlots();
-                    } else {
-                        setDatabaseLog("Error Otorisasi", "Respons Google salah. Pastikan deployment diatur untuk 'Anyone'.", false);
-                    }
-                })
-                .catch(err => {
-                    console.error("CORS / Network Error:", err);
-                    setDatabaseLog("Gagal Sinkronisasi", "Masalah jaringan / CORS Google. Periksa URL Anda.", false);
+                    });
+                    setDatabaseLog("Aktif (Tersinkronisasi)", `Koneksi stabil. Berhasil memuat ${data.length} baris data booking.`, true);
                     renderLiveOverview();
                     renderTimeSlots();
-                });
+                } else {
+                    setDatabaseLog("Galat (Response Salah)", "Format data yang diterima dari Google API tidak berbentuk array list.", false);
+                }
+            })
+            .catch(err => {
+                console.error("Koneksi database Google Sheets bermasalah:", err);
+                setDatabaseLog("Gagal Sinkronisasi", "Gagal membaca database Google Sheets. Aplikasi berjalan mode offline.", false);
+                renderLiveOverview();
+                renderTimeSlots();
+            });
         }
 
         // Fungsi kontrol pengaturan tampilan visibilitas langkah (step-by-step visibility)
@@ -802,7 +802,7 @@
                 'Total': totalStr
             };
 
-            // POST ke Google Apps Script dengan format JSON mentah
+            // POST ke Google Apps Script dengan format JSON mentah (Membasmi silent block browser)
             fetch(SCRIPT_URL, {
                 method: 'POST',
                 mode: 'no-cors',
