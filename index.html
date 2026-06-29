@@ -362,10 +362,10 @@
             }
         }
 
-        // AMBIL DATA ONLINE LANGSUNG DARI GOOGLE SHEET (DENGAN SYSTEM ANTI-CACHE BROWSER)
+// AMBIL DATA ONLINE LANGSUNG DARI GOOGLE SHEET (SINKRONISASI AKTIF)
         function fetchGlobalBookings() {
             // Validasi kebal dari kesalahan search & replace otomatis
-            if (!SCRIPT_URL || SCRIPT_URL.includes("TEMPEL_URL") || SCRIPT_URL.trim() === "" || !SCRIPT_URL.includes("script.google.com")) {
+            if (!SCRIPT_URL || SCRIPT_URL.includes("https://script.google.com/macros/s/AKfycbyfNQQRi-oIXeozK2Qqh_VrqC5HA-UTS3Okj3dwjwy4Tyx4Y0eQWW9rgd1pGbmjDAUZ/exec") || SCRIPT_URL.trim() === "" || !SCRIPT_URL.includes("script.google.com")) {
                 setDatabaseLog("Mode Offline / Belum diatur", "Tautan SCRIPT_URL belum dikonfigurasi dengan benar.", null);
                 renderLiveOverview();
                 renderTimeSlots();
@@ -410,7 +410,12 @@
                     renderLiveOverview();
                     renderTimeSlots();
                 } else {
-                    setDatabaseLog("Galat (Response Salah)", "Format data yang diterima dari Google API tidak berbentuk array list.", false);
+                    // MEMBONGKAR & MENAMPILKAN PESAN ERROR ASLI DARI GOOGLE SHEET
+                    let pesanErrorGoogle = "Format data dari Google API salah.";
+                    if (data && data.error) {
+                        pesanErrorGoogle = data.error;
+                    }
+                    setDatabaseLog("Galat Google Sheet", pesanErrorGoogle, false);
                 }
             })
             .catch(err => {
@@ -420,7 +425,6 @@
                 renderTimeSlots();
             });
         }
-
         // Fungsi kontrol pengaturan tampilan visibilitas langkah (step-by-step visibility)
         function updateStepVisibility() {
             const datetimeSection = document.getElementById('datetime-section');
