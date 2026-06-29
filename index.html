@@ -84,7 +84,7 @@
                 <li>Booking minimal <strong>1 jam sebelum</strong> kedatangan.</li>
                 <li>Toleransi keterlambatan maksimal <strong>15 menit</strong> (selebihnya batal).</li>
                 <li>Satu slot booking hanya berlaku untuk <strong>1 orang</strong>.</li>
-                <li>Layanan berdurasi panjang (*Perming/Keratin/Cornrow*) akan otomatis memblokir beberapa jam ke depan.</li>
+                <li>Jadwal di atas tersinkronisasi otomatis secara langsung (*real-time*) di semua handphone.</li>
             </ul>
         </div>
 
@@ -199,7 +199,7 @@
             <div class="bg-white rounded-2xl w-full max-w-xs p-6 text-center shadow-2xl transform scale-95 transition-all">
                 <div class="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">✓</div>
                 <h3 class="text-lg font-bold text-slate-900 mb-1">Booking Berhasil!</h3>
-                <p class="text-xs text-slate-500 mb-4">Detail pesanan Anda telah tersimpan di sistem Google Sheet.</p>
+                <p class="text-xs text-slate-500 mb-4">Detail pesanan Anda telah tersimpan di database sistem.</p>
                 <div class="bg-slate-50 p-3 rounded-xl text-left text-xs mb-4 space-y-1 border border-slate-100">
                     <p><strong>Nama:</strong> <span id="rec-name"></span></p>
                     <p><strong>Capster:</strong> <span id="rec-capster"></span></p>
@@ -221,18 +221,18 @@
         // ========================================================
         // TEMPELKAN URL WEB APP YANG ANDA SALIN PADA LANGKAH 4 DI SINI:
         // ========================================================
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwWiNrGItQ_bqmYvFM_99TmxlER0vFoSADDy1Hl7GJha5OUOJsOoUfqZft70wu85A09/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzgBBNEJnIEjLOdXdqigDxfdkM5F3nuXIjOO_HGLyOXxit0u8-bTYweHbgTBnf4e8A/exec";
 
-        // Database Layanan Barbershop beserta Aturan Durasi Jam (Langkah)
+        // Database Layanan Barbershop beserta Aturan Durasi Jam
         const capsterData = {
             chandra: {
                 name: "Chandra",
                 services: [
                     { id: "c1", name: "Haircut", price: 70000, duration: 1 },
                     { id: "c2", name: "Hair wash + massage", price: 15000, duration: 1 },
-                    { id: "c3", name: "Keratin treatment", price: 250000, duration: 3 }, // Durasi 3 Jam
-                    { id: "c4", name: "Chemical perming", price: 250000, duration: 2 },  // Durasi 2 Jam
-                    { id: "c5", name: "Cornrow", price: 350000, duration: 5 },           // Durasi 5 Jam
+                    { id: "c3", name: "Keratin treatment", price: 250000, duration: 3 },
+                    { id: "c4", name: "Chemical perming", price: 250000, duration: 2 },
+                    { id: "c5", name: "Cornrow", price: 350000, duration: 5 },
                     { id: "c6", name: "Creambath", price: 150000, duration: 1 }
                 ]
             },
@@ -256,7 +256,10 @@
 
         const availableHours = ["10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00"];
 
-        // State Aplikasi
+        // State Database Booking Global (Disinkronkan dari Google Sheets)
+        let globalBookings = [];
+
+        // State Aplikasi Lokal
         let selectedCapster = '';
         let selectedServices = [];
         let selectedDate = '';
@@ -269,18 +272,59 @@
         const todayStr = new Date().toISOString().split('T')[0];
         dateInput.setAttribute('min', todayStr);
 
-        // Penyimpanan data booking lokal untuk simulasi
-        if (!localStorage.getItem('s_one_bookings')) {
-            localStorage.setItem('s_one_bookings', JSON.stringify([
-                { date: todayStr, time: "10:00", capster: "chandra" },
-                { date: todayStr, time: "11:00", capster: "chandra" },
-                { date: todayStr, time: "14:00", capster: "vanusa" },
-                { date: todayStr, time: "16:00", capster: "rendi" }
-            ]));
+        // Fungsi mengekstrak jam dari teks rentang (contoh: "13:00 - 16:00 (3 Jam)" -> [13:00, 14:00, 15:00])
+        function extractHoursFromRange(timeStr) {
+            if (!timeStr) return [];
+            const str = String(timeStr);
+            if (str.includes(' - ')) {
+                const parts = str.split(' - ');
+                const startHour = parts[0];
+                const endHour = parts[1].split(' ')[0];
+                const startIdx = availableHours.indexOf(startHour);
+                const endIdx = availableHours.indexOf(endHour);
+                
+                let hours = [];
+                if (startIdx !== -1) {
+                    const actualEndIdx = endIdx !== -1 ? endIdx : availableHours.length;
+                    for (let k = startIdx; k < actualEndIdx; k++) {
+                        hours.push(availableHours[k]);
+                    }
+                }
+                return hours;
+            } else {
+                return [str];
+            }
         }
 
-        function getBookings() {
-            return JSON.parse(localStorage.getItem('s_one_bookings')) || [];
+        // AMBIL DATA DARI GOOGLE SHEET LANGSUNG (ONLINE MULTI-USER)
+        function fetchGlobalBookings() {
+            if (SCRIPT_URL === "TEMPEL_URL_WEB_APP_ANDA_DI_SINI") return;
+
+            fetch(SCRIPT_URL)
+                .then(response => response.json())
+                .then(data => {
+                    if (Array.isArray(data)) {
+                        globalBookings = [];
+                        data.forEach(b => {
+                            const capsterKey = b.Capster ? b.Capster.toLowerCase() : '';
+                            const dateStr = b.Tanggal; // Berformat YYYY-MM-DD
+                            const timeStr = b.Jam;
+                            
+                            const blockedHours = extractHoursFromRange(timeStr);
+                            blockedHours.forEach(hour => {
+                                globalBookings.push({
+                                    date: dateStr,
+                                    time: hour,
+                                    capster: capsterKey
+                                });
+                            });
+                        });
+                        // Muat ulang tampilan setelah data terbaru berhasil diunduh
+                        renderLiveOverview();
+                        renderTimeSlots();
+                    }
+                })
+                .catch(err => console.error("Koneksi database Google Sheets bermasalah:", err));
         }
 
         // Kalkulasi durasi maksimal dari layanan yang dipilih
@@ -294,13 +338,12 @@
             return maxDuration;
         }
 
-        // Tampilan Jadwal Live Halaman Awal
+        // Tampilan Jadwal Live Halaman Awal (Berdasarkan Database Online)
         function renderLiveOverview() {
             const grid = document.getElementById('live-schedule-grid');
             grid.innerHTML = '';
             
-            const bookings = getBookings();
-            const bookedToday = bookings.filter(b => b.date === todayStr && b.capster === currentScheduleView);
+            const bookedToday = globalBookings.filter(b => b.date === todayStr && b.capster === currentScheduleView);
             const totalBookingsToday = bookedToday.length;
             const isFullDay = totalBookingsToday >= 10;
 
@@ -416,7 +459,7 @@
             // Atur ulang jam jika durasi layanan baru tidak mencukupi untuk jam yang sebelumnya dipilih
             if (selectedTime) {
                 if (!validateConsecutiveSlots(selectedTime)) {
-                    selectedTime = ''; // batalkan pilihan jam lama
+                    selectedTime = '';
                 }
             }
             
@@ -430,35 +473,34 @@
             selectedTime = '';
             if (selectedDate) {
                 document.getElementById('customer-section').classList.remove('hidden');
+                // Segarkan data dari Google Sheets sebelum menampilkan pilihan jam
+                fetchGlobalBookings();
                 renderTimeSlots();
             }
             updateCart();
         }
 
-        // Validasi ketersediaan slot berurutan untuk durasi panjang
+        // Validasi ketersediaan slot berurutan berdasarkan Database Online
         function validateConsecutiveSlots(startTime) {
             const duration = getRequiredDuration();
             const startIndex = availableHours.indexOf(startTime);
             
-            // Jika durasi melebihi batas jam operasional (jam terakhir adalah 21:00-22:00)
             if (startIndex + duration > availableHours.length) {
                 return false;
             }
 
-            const bookings = getBookings();
-            const bookedForCapsterAndDate = bookings.filter(b => b.date === selectedDate && b.capster === selectedCapster);
+            const bookedForCapsterAndDate = globalBookings.filter(b => b.date === selectedDate && b.capster === selectedCapster);
             const now = new Date();
             const isToday = selectedDate === now.toISOString().split('T')[0];
 
-            // Cek setiap jam berturut-turut apakah sudah dipesan atau kadaluarsa
             for (let i = 0; i < duration; i++) {
                 const checkTime = availableHours[startIndex + i];
                 
-                // 1. Cek apakah jam ini sudah dipesan orang lain
+                // 1. Cek dari database online global
                 const isBooked = bookedForCapsterAndDate.some(b => b.time === checkTime);
                 if (isBooked) return false;
 
-                // 2. Cek aturan minimal 1 jam sebelum jika memesan untuk hari ini
+                // 2. Cek aturan minimal 1 jam sebelum
                 if (isToday) {
                     const [slotH, slotM] = checkTime.split(':').map(Number);
                     const slotTime = new Date();
@@ -487,8 +529,7 @@
                 warningText.innerHTML = `Pilihan Jam`;
             }
 
-            const bookings = getBookings();
-            const bookedForCapsterAndDate = bookings.filter(b => b.date === selectedDate && b.capster === selectedCapster);
+            const bookedForCapsterAndDate = globalBookings.filter(b => b.date === selectedDate && b.capster === selectedCapster);
             const totalBookingsToday = bookedForCapsterAndDate.length;
             const isFullDay = totalBookingsToday >= 10;
 
@@ -508,7 +549,6 @@
                     button.className = "p-2 border border-slate-100 bg-slate-100 text-red-400 line-through rounded-lg text-xs cursor-not-allowed";
                     button.innerText = time;
                 } else if (!isValidSeq) {
-                    // Jam dinonaktifkan karena waktu sisa tutup tidak cukup atau jam depannya sudah dipesan orang lain
                     button.disabled = true;
                     button.className = "p-2 border border-slate-50 bg-slate-50 text-slate-300 rounded-lg text-xs cursor-not-allowed";
                     button.innerText = time;
@@ -596,19 +636,18 @@
             // Hitung rentang jam berdasarkan durasi layanan
             const duration = getRequiredDuration();
             const startIndex = availableHours.indexOf(selectedTime);
-            
-            // Simpan jam blokir berturut-turut ke database lokal untuk menghindari tabrakan
-            const bookings = getBookings();
+
+            // Optimistic UI Update: Blokir instan secara lokal agar tidak bisa diklik ulang saat memproses
             for (let i = 0; i < duration; i++) {
                 const blockedTime = availableHours[startIndex + i];
-                bookings.push({
+                globalBookings.push({
                     date: selectedDate,
                     time: blockedTime,
-                    capster: selectedCapster,
-                    name: name
+                    capster: selectedCapster
                 });
             }
-            localStorage.setItem('s_one_bookings', JSON.stringify(bookings));
+            renderLiveOverview();
+            renderTimeSlots();
 
             // Menentukan format laporan jam kerja untuk Google Sheets
             const endIndex = startIndex + duration;
@@ -649,54 +688,7 @@
                 document.getElementById('rec-total').innerText = totalStr;
 
                 document.getElementById('success-modal').classList.remove('hidden');
-            })
-            .catch(error => {
-                console.error('Error!', error.message);
-                alert("Terjadi kendala saat menyambungkan dengan server Google Sheet.");
-            })
-            .finally(() => {
-                submitBtn.innerText = "Booking Sekarang";
-                renderLiveOverview();
-                updateCart();
-            });
-        }
+                
+                // Segarkan ulang database agar sinkron
+                setTimeout(fetchGlobalBookings,
 
-        // Tutup Modal & Reset Form ke Tampilan Awal
-        function closeModal() {
-            document.getElementById('success-modal').classList.add('hidden');
-            
-            selectedCapster = '';
-            selectedServices = [];
-            selectedDate = '';
-            selectedTime = '';
-            selectedPayment = '';
-
-            document.getElementById('cust-name').value = '';
-            document.getElementById('cust-whatsapp').value = '';
-            document.getElementById('booking-date').value = '';
-
-            document.querySelectorAll('.capster-btn').forEach(btn => {
-                btn.classList.remove('border-brandYellow', 'bg-yellow-50/50');
-                btn.classList.add('border-slate-200', 'bg-white');
-            });
-
-            document.querySelectorAll('.pay-btn').forEach(btn => {
-                btn.classList.remove('border-brandYellow', 'bg-yellow-50/50');
-                btn.classList.add('border-slate-200', 'bg-white');
-            });
-
-            document.getElementById('services-section').classList.add('hidden');
-            document.getElementById('datetime-section').classList.add('hidden');
-            document.getElementById('customer-section').classList.add('hidden');
-            
-            renderLiveOverview();
-            updateCart();
-        }
-
-        // Memuat visual jadwal live pada halaman pertama terbuka
-        window.onload = function() {
-            renderLiveOverview();
-        };
-    </script>
-</body>
-</html>
