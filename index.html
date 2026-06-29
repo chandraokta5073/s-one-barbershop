@@ -227,7 +227,7 @@
         // ========================================================
         // TEMPELKAN URL WEB APP YANG ANDA SALIN PADA TAHAP 1 DI SINI:
         // ========================================================
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyQVIiVlJq0JW6yeap7YKsEmeyvA7JwN-er43HNahFStIDTN4P1DBujxWjUFTXtekFl/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxBGGeOHqSvjroUzUoDNDbeHLH1cRxsTK_HQw8KDpuWLHkKcoDpPlJocDaeDodQBpyK/exec";
 
         // Database Layanan Barbershop beserta Aturan Durasi Jam
         const capsterData = {
@@ -331,48 +331,52 @@
             }
         }
 
-        // AMBIL DATA ONLINE LANGSUNG DARI GOOGLE SHEET (DENGAN SYSTEM ANTI-CACHE BROWSER)
+        // PEMBACAAN DATA BARU: MENGGUNAKAN METODE POST 'READ' (100% BEBAS DARI BLOKIR CACHE REDIRECT)
         function fetchGlobalBookings() {
-            if (SCRIPT_URL === "https://script.google.com/macros/s/AKfycbyQVIiVlJq0JW6yeap7YKsEmeyvA7JwN-er43HNahFStIDTN4P1DBujxWjUFTXtekFl/exec" || SCRIPT_URL.trim() === "") {
+            if (SCRIPT_URL === "https://script.google.com/macros/s/AKfycbxBGGeOHqSvjroUzUoDNDbeHLH1cRxsTK_HQw8KDpuWLHkKcoDpPlJocDaeDodQBpyK/exec" || SCRIPT_URL.trim() === "") {
                 renderLiveOverview();
                 renderTimeSlots();
                 return;
             }
 
-            // Menambahkan Cache Buster (?_cb=Timestamp) agar browser tidak menyajikan data kedaluwarsa
-            const cacheBuster = "?_cb=" + new Date().getTime();
+            // Melakukan pembacaan data via POST (POST request tidak pernah disimpan di cache browser)
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'text/plain'
+                },
+                body: JSON.stringify({ action: 'read' })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (Array.isArray(data)) {
+                    globalBookings = [];
+                    data.forEach(b => {
+                        const capsterVal = getPropValue(b, 'Capster');
+                        const tanggalVal = getPropValue(b, 'Tanggal');
+                        const jamVal = getPropValue(b, 'Jam');
 
-            fetch(SCRIPT_URL + cacheBuster)
-                .then(response => response.json())
-                .then(data => {
-                    if (Array.isArray(data)) {
-                        globalBookings = [];
-                        data.forEach(b => {
-                            const capsterVal = getPropValue(b, 'Capster');
-                            const tanggalVal = getPropValue(b, 'Tanggal');
-                            const jamVal = getPropValue(b, 'Jam');
-
-                            const capsterKey = capsterVal ? capsterVal.toLowerCase() : '';
-                            const dateStr = normalizeDateStr(tanggalVal);
-                            
-                            const blockedHours = extractHoursFromRange(jamVal);
-                            blockedHours.forEach(hour => {
-                                globalBookings.push({
-                                    date: dateStr,
-                                    time: hour,
-                                    capster: capsterKey
-                                });
+                        const capsterKey = capsterVal ? capsterVal.toLowerCase() : '';
+                        const dateStr = normalizeDateStr(tanggalVal);
+                        
+                        const blockedHours = extractHoursFromRange(jamVal);
+                        blockedHours.forEach(hour => {
+                            globalBookings.push({
+                                date: dateStr,
+                                time: hour,
+                                capster: capsterKey
                             });
                         });
-                        renderLiveOverview();
-                        renderTimeSlots();
-                    }
-                })
-                .catch(err => {
-                    console.error("Koneksi database Google Sheets bermasalah:", err);
+                    });
                     renderLiveOverview();
                     renderTimeSlots();
-                });
+                }
+            })
+            .catch(err => {
+                console.error("Koneksi database Google Sheets bermasalah:", err);
+                renderLiveOverview();
+                renderTimeSlots();
+            });
         }
 
         // Fungsi kontrol pengaturan tampilan visibilitas langkah (step-by-step visibility)
@@ -706,7 +710,7 @@
         document.getElementById('cust-name').addEventListener('input', updateCart);
         document.getElementById('cust-whatsapp').addEventListener('input', updateCart);
 
-        // Pengiriman Data Form murni menggunakan RAW JSON murni (BEBAS BLOKIR DIAM-DIAM OLEH BROWSER SMARTPHONE)
+        // Pengiriman Data Form yang Kompatibel (RAW JSON TRANSFERS)
         function submitBooking() {
             const name = document.getElementById('cust-name').value.trim();
             const whatsapp = document.getElementById('cust-whatsapp').value.trim();
@@ -756,12 +760,12 @@
                 'Total': totalStr
             };
 
-            // POST ke Google Apps Script dengan format JSON mentah
+            // POST ke Google Apps Script dengan format JSON mentah (Membasmi silent block browser)
             fetch(SCRIPT_URL, {
                 method: 'POST',
                 mode: 'no-cors',
                 headers: {
-                    'Content-Type': 'text/plain' // Menggunakan header aman agar browser meloloskan data
+                    'Content-Type': 'text/plain'
                 },
                 body: JSON.stringify(payload)
             })
