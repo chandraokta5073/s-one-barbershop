@@ -365,7 +365,7 @@
         // AMBIL DATA ONLINE LANGSUNG DARI GOOGLE SHEET (DENGAN SYSTEM ANTI-CACHE BROWSER)
         function fetchGlobalBookings() {
             if (SCRIPT_URL === "https://script.google.com/macros/s/AKfycbyfNQQRi-oIXeozK2Qqh_VrqC5HA-UTS3Okj3dwjwy4Tyx4Y0eQWW9rgd1pGbmjDAUZ/exec" || SCRIPT_URL.trim() === "") {
-                setDatabaseLog("Mode Offline / Belum diatur", "SCRIPT_URL belum diganti dengan tautan Web App Anda.", null);
+                setDatabaseLog("Mode Offline / Belum diatur", "https://script.google.com/macros/s/AKfycbyfNQQRi-oIXeozK2Qqh_VrqC5HA-UTS3Okj3dwjwy4Tyx4Y0eQWW9rgd1pGbmjDAUZ/exec.", null);
                 renderLiveOverview();
                 renderTimeSlots();
                 return;
