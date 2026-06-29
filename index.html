@@ -1,4 +1,4 @@
-<index.html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -127,7 +127,7 @@
             </div>
         </section>
 
-        <!-- PILIH TANGGAL DAN JAM -->
+        <!-- PILIH TANGGAL DAN JAM BOOKING -->
         <section class="p-4 hidden" id="datetime-section">
             <h2 class="text-sm font-extrabold text-brandDark uppercase tracking-wider mb-3">3. Pilih Tanggal & Jam</h2>
             
@@ -136,11 +136,17 @@
                 <input type="date" id="booking-date" onchange="onDateChange()" class="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brandYellow focus:border-transparent outline-none text-sm font-medium">
             </div>
 
-            <div>
-                <label class="block text-xs font-semibold text-slate-500 mb-2" id="duration-warning-text">Pilihan Jam</label>
+            <!-- Bagian Jam Booking (Kini Selalu Ada Wadahnya) -->
+            <div id="slots-container" class="hidden">
+                <label class="block text-xs font-semibold text-slate-500 mb-2" id="duration-warning-text">Pilihan Jam Booking</label>
                 <div class="grid grid-cols-4 gap-2" id="slots-grid">
-                    <!-- Diisi otomatis oleh JavaScript -->
+                    <!-- Tombol jam booking diisi oleh javascript -->
                 </div>
+            </div>
+
+            <!-- Petunjuk visual sebelum memilih tanggal -->
+            <div id="date-placeholder-text" class="text-xs text-slate-400 italic p-4 text-center border border-dashed border-slate-200 rounded-xl bg-slate-50">
+                Silakan pilih tanggal kedatangan di atas terlebih dahulu untuk menampilkan pilihan jam booking.
             </div>
         </section>
 
@@ -272,16 +278,14 @@
         const todayStr = new Date().toISOString().split('T')[0];
         dateInput.setAttribute('min', todayStr);
 
-        // Penyeragaman tanggal secara ketat (menghindari error timezone Google Sheet)
+        // Penyeragaman tanggal secara ketat
         function normalizeDateStr(dateVal) {
             if (!dateVal) return "";
             const str = String(dateVal).trim();
-            // Ekstrak pola format YYYY-MM-DD
             const match = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
             if (match) {
                 return `${match[1]}-${match[2]}-${match[3]}`;
             }
-            // Jika dikirimkan format tanggal standar
             const d = new Date(str);
             if (!isNaN(d.getTime())) {
                 const y = d.getFullYear();
@@ -316,9 +320,14 @@
             }
         }
 
-        // AMBIL DATA ONLINE LANGSUNG DARI GOOGLE SHEET (SYNCHRONIZED)
+        // AMBIL DATA ONLINE LANGSUNG DARI GOOGLE SHEET (DENGAN FAILBACK OFFLINE JIKA URL BELUM DISET)
         function fetchGlobalBookings() {
-            if (SCRIPT_URL === "https://docs.google.com/spreadsheets/d/1usO_qZa_brz4xgX_O2wskuAm242vfQ_TZvYBRuMOM3Y/edit?gid=0#gid=0") return;
+            if (SCRIPT_URL === "https://docs.google.com/spreadsheets/d/1usO_qZa_brz4xgX_O2wskuAm242vfQ_TZvYBRuMOM3Y/edit?gid=0#gid=0" || SCRIPT_URL.trim() === "") {
+                // FAILBACK: Tampilkan slot kosong agar jam booking tetap bisa diuji coba secara offline
+                renderLiveOverview();
+                renderTimeSlots();
+                return;
+            }
 
             fetch(SCRIPT_URL)
                 .then(response => response.json())
@@ -327,7 +336,7 @@
                         globalBookings = [];
                         data.forEach(b => {
                             const capsterKey = b.Capster ? b.Capster.toLowerCase() : '';
-                            const dateStr = normalizeDateStr(b.Tanggal); // Penyeragaman format
+                            const dateStr = normalizeDateStr(b.Tanggal);
                             const timeStr = b.Jam;
                             
                             const blockedHours = extractHoursFromRange(timeStr);
@@ -339,12 +348,16 @@
                                 });
                             });
                         });
-                        // Sinkronkan visual setelah data terbaru berhasil dimuat
                         renderLiveOverview();
                         renderTimeSlots();
                     }
                 })
-                .catch(err => console.error("Koneksi database Google Sheets bermasalah:", err));
+                .catch(err => {
+                    console.error("Koneksi database Google Sheets bermasalah:", err);
+                    // FAILBACK: Tetap munculkan jam agar fungsi tombol jam tidak macet
+                    renderLiveOverview();
+                    renderTimeSlots();
+                });
         }
 
         // Kalkulasi durasi maksimal dari layanan yang dipilih
@@ -491,10 +504,22 @@
         function onDateChange() {
             selectedDate = normalizeDateStr(document.getElementById('booking-date').value);
             selectedTime = '';
+            
+            const slotsContainer = document.getElementById('slots-container');
+            const placeholderText = document.getElementById('date-placeholder-text');
+            const customerSection = document.getElementById('customer-section');
+
             if (selectedDate) {
-                document.getElementById('customer-section').classList.remove('hidden');
-                // Tarik database dari Google Sheets sebelum memuat waktu
+                slotsContainer.classList.remove('hidden');
+                placeholderText.classList.add('hidden');
+                customerSection.classList.remove('hidden');
+                
+                // Tarik database dari Google Sheets
                 fetchGlobalBookings();
+            } else {
+                slotsContainer.classList.add('hidden');
+                placeholderText.classList.remove('hidden');
+                customerSection.classList.add('hidden');
             }
             updateCart();
         }
@@ -543,9 +568,9 @@
             const warningText = document.getElementById('duration-warning-text');
             
             if (duration > 1) {
-                warningText.innerHTML = `Pilihan Jam <span class="text-amber-600 font-bold">(Membutuhkan ${duration} jam berurutan)</span>`;
+                warningText.innerHTML = `Pilihan Jam Booking <span class="text-amber-600 font-bold">(Membutuhkan ${duration} jam berurutan)</span>`;
             } else {
-                warningText.innerHTML = `Pilihan Jam`;
+                warningText.innerHTML = `Pilihan Jam Booking`;
             }
 
             const bookedForCapsterAndDate = globalBookings.filter(b => b.date === selectedDate && b.capster === selectedCapster);
@@ -606,156 +631,4 @@
             // Tampilkan QRIS Image
             const qrisContainer = document.getElementById('qris-container');
             if (method === 'QRIS') {
-                qrisContainer.classList.remove('hidden');
-            } else {
-                qrisContainer.classList.add('hidden');
-            }
-
-            updateCart();
-        }
-
-        // Validasi Keranjang & Submit
-        function updateCart() {
-            let total = 0;
-            selectedServices.forEach(s => total += s.price);
-            document.getElementById('cart-total').innerText = `Rp ${total.toLocaleString('id-ID')}`;
-
-            const name = document.getElementById('cust-name').value.trim();
-            const whatsapp = document.getElementById('cust-whatsapp').value.trim();
-            const submitBtn = document.getElementById('btn-submit');
-
-            if (selectedCapster && selectedServices.length > 0 && selectedDate && selectedTime && name && whatsapp && selectedPayment) {
-                submitBtn.disabled = false;
-                submitBtn.className = "bg-brandYellow hover:bg-yellow-400 text-brandDark font-extrabold px-6 py-3 rounded-xl text-sm transition-all shadow-md active:scale-95";
-            } else {
-                submitBtn.disabled = true;
-                submitBtn.className = "bg-slate-300 text-slate-500 font-bold px-6 py-3 rounded-xl text-sm transition-all cursor-not-allowed";
-            }
-        }
-
-        document.getElementById('cust-name').addEventListener('input', updateCart);
-        document.getElementById('cust-whatsapp').addEventListener('input', updateCart);
-
-        // Pengiriman Data Form yang Kompatibel
-        function submitBooking() {
-            const name = document.getElementById('cust-name').value.trim();
-            const whatsapp = document.getElementById('cust-whatsapp').value.trim();
-            const totalStr = document.getElementById('cart-total').innerText;
-            const servicesStr = selectedServices.map(s => s.name).join(', ');
-
-            if (!name || !whatsapp || !selectedTime || !selectedDate || !selectedPayment) {
-                alert("Harap lengkapi seluruh kolom data terlebih dahulu!");
-                return;
-            }
-
-            const submitBtn = document.getElementById('btn-submit');
-            submitBtn.disabled = true;
-            submitBtn.innerText = "Memproses...";
-
-            // Hitung rentang jam berdasarkan durasi layanan
-            const duration = getRequiredDuration();
-            const startIndex = availableHours.indexOf(selectedTime);
-
-            // Optimistic UI Update: Blokir secara instan di HP pengguna saat ini agar tidak terjadi double-booking
-            for (let i = 0; i < duration; i++) {
-                const blockedTime = availableHours[startIndex + i];
-                globalBookings.push({
-                    date: selectedDate,
-                    time: blockedTime,
-                    capster: selectedCapster
-                });
-            }
-            renderLiveOverview();
-            renderTimeSlots();
-
-            // Menentukan format laporan jam kerja untuk Google Sheets
-            const endIndex = startIndex + duration;
-            const endHourStr = endIndex < availableHours.length ? availableHours[endIndex] : "22:00";
-            const formattedTimeRange = `${selectedTime} - ${endHourStr} (${duration} Jam)`;
-
-            // Format data URLSearchParams (Format paling aman & bebas dari kendala CORS)
-            const postData = new URLSearchParams({
-                'Timestamp': new Date().toLocaleString('id-ID'),
-                'Nama': name,
-                'WhatsApp': whatsapp,
-                'Capster': capsterData[selectedCapster].name,
-                'Layanan': servicesStr,
-                'Tanggal': selectedDate,
-                'Jam': formattedTimeRange, // Menulis range waktu penuh ke Google Sheets
-                'Metode_Pembayaran': selectedPayment,
-                'Total': totalStr
-            }).toString();
-
-            // POST ke Google Apps Script
-            fetch(SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: postData
-            })
-            .then(() => {
-                document.getElementById('qris-container').classList.add('hidden');
-
-                // Isi data resi sukses
-                document.getElementById('rec-name').innerText = name;
-                document.getElementById('rec-capster').innerText = capsterData[selectedCapster].name;
-                document.getElementById('rec-date').innerText = selectedDate;
-                document.getElementById('rec-time').innerText = formattedTimeRange;
-                document.getElementById('rec-payment').innerText = selectedPayment;
-                document.getElementById('rec-total').innerText = totalStr;
-
-                document.getElementById('success-modal').classList.remove('hidden');
-                
-                // Segarkan ulang database agar sinkron setelah jeda pengolahan server Google
-                setTimeout(fetchGlobalBookings, 2000);
-            })
-            .catch(error => {
-                console.error('Error!', error.message);
-                alert("Terjadi kendala saat menyambungkan dengan server Google Sheet.");
-            })
-            .finally(() => {
-                submitBtn.innerText = "Booking Sekarang";
-            });
-        }
-
-        // Tutup Modal & Reset Form ke Tampilan Awal
-        function closeModal() {
-            document.getElementById('success-modal').classList.add('hidden');
-            
-            selectedCapster = '';
-            selectedServices = [];
-            selectedDate = '';
-            selectedTime = '';
-            selectedPayment = '';
-
-            document.getElementById('cust-name').value = '';
-            document.getElementById('cust-whatsapp').value = '';
-            document.getElementById('booking-date').value = '';
-
-            document.querySelectorAll('.capster-btn').forEach(btn => {
-                btn.classList.remove('border-brandYellow', 'bg-yellow-50/50');
-                btn.classList.add('border-slate-200', 'bg-white');
-            });
-
-            document.querySelectorAll('.pay-btn').forEach(btn => {
-                btn.classList.remove('border-brandYellow', 'bg-yellow-50/50');
-                btn.classList.add('border-slate-200', 'bg-white');
-            });
-
-            document.getElementById('services-section').classList.add('hidden');
-            document.getElementById('datetime-section').classList.add('hidden');
-            document.getElementById('customer-section').classList.add('hidden');
-            
-            fetchGlobalBookings();
-            updateCart();
-        }
-
-        // Memuat data database langsung dari Google Sheets pada halaman pertama terbuka
-        window.onload = function() {
-            fetchGlobalBookings();
-        };
-    </script>
-</body>
-</html>
+                qrisContainer.classList.remov
