@@ -189,7 +189,7 @@
             </div>
         </section>
 
-        <!-- FITUR DIAGNOSTIK KONEKSI DATABASE -->
+        <!-- PANEL DIAGNOSTIK KONEKSI DATABASE -->
         <div class="m-4 p-3.5 bg-slate-900 text-green-400 rounded-xl font-mono text-[10px] space-y-1 shadow-inner">
             <p class="font-bold text-brandYellow border-b border-slate-800 pb-1 flex items-center justify-between">
                 <span>🔧 PANEL DIAGNOSTIK DATABASE</span>
@@ -235,7 +235,7 @@
     <!-- SCRIPT UTAMA JAVASCRIPT -->
     <script>
         // ========================================================
-        // Tautat API Google Web App Anda (Tanda titik di akhir telah dibersihkan)
+        // TAUTAN GOOGLE WEB APP AKTIF (SUDAH DIKONFIGURASI SECARA OTOMATIS)
         // ========================================================
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyfNQQRi-oIXeozK2Qqh_VrqC5HA-UTS3Okj3dwjwy4Tyx4Y0eQWW9rgd1pGbmjDAUZ/exec";
 
@@ -362,10 +362,10 @@
             }
         }
 
-// AMBIL DATA ONLINE LANGSUNG DARI GOOGLE SHEET (SINKRONISASI AKTIF)
+        // AMBIL DATA ONLINE LANGSUNG DARI GOOGLE SHEET (DENGAN SYSTEM ANTI-CACHE BROWSER)
         function fetchGlobalBookings() {
             // Validasi kebal dari kesalahan search & replace otomatis
-            if (!SCRIPT_URL || SCRIPT_URL.includes("https://script.google.com/macros/s/AKfycbyfNQQRi-oIXeozK2Qqh_VrqC5HA-UTS3Okj3dwjwy4Tyx4Y0eQWW9rgd1pGbmjDAUZ/exec") || SCRIPT_URL.trim() === "" || !SCRIPT_URL.includes("script.google.com")) {
+            if (!SCRIPT_URL || SCRIPT_URL.includes("TEMPEL_URL") || SCRIPT_URL.trim() === "" || !SCRIPT_URL.includes("script.google.com")) {
                 setDatabaseLog("Mode Offline / Belum diatur", "Tautan SCRIPT_URL belum dikonfigurasi dengan benar.", null);
                 renderLiveOverview();
                 renderTimeSlots();
@@ -425,6 +425,7 @@
                 renderTimeSlots();
             });
         }
+
         // Fungsi kontrol pengaturan tampilan visibilitas langkah (step-by-step visibility)
         function updateStepVisibility() {
             const datetimeSection = document.getElementById('datetime-section');
@@ -806,7 +807,7 @@
                 'Total': totalStr
             };
 
-            // POST ke Google Apps Script dengan format JSON mentah (Membasmi silent block browser)
+            // POST ke Google Apps Script dengan format JSON mentah
             fetch(SCRIPT_URL, {
                 method: 'POST',
                 mode: 'no-cors',
