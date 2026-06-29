@@ -362,10 +362,11 @@
             }
         }
 
-        // AMBIL DATA ONLINE LANGSUNG DARI GOOGLE SHEET (DENGAN SYSTEM ANTI-CACHE BROWSER)
+// AMBIL DATA ONLINE LANGSUNG DARI GOOGLE SHEET (DENGAN SYSTEM ANTI-CACHE BROWSER)
         function fetchGlobalBookings() {
-            if (SCRIPT_URL === "https://script.google.com/macros/s/AKfycbyfNQQRi-oIXeozK2Qqh_VrqC5HA-UTS3Okj3dwjwy4Tyx4Y0eQWW9rgd1pGbmjDAUZ/exec" || SCRIPT_URL.trim() === "") {
-                setDatabaseLog("Mode Offline / Belum diatur", "https://script.google.com/macros/s/AKfycbyfNQQRi-oIXeozK2Qqh_VrqC5HA-UTS3Okj3dwjwy4Tyx4Y0eQWW9rgd1pGbmjDAUZ/exec.", null);
+            // Validasi kebal bug "Replace All" otomatis
+            if (!SCRIPT_URL || SCRIPT_URL.includes("https://script.google.com/macros/s/AKfycbyfNQQRi-oIXeozK2Qqh_VrqC5HA-UTS3Okj3dwjwy4Tyx4Y0eQWW9rgd1pGbmjDAUZ/exec") || SCRIPT_URL.trim() === "" || !SCRIPT_URL.includes("script.google.com")) {
+                setDatabaseLog("Mode Offline / Belum diatur", "Tautan SCRIPT_URL belum dikonfigurasi dengan benar.", null);
                 renderLiveOverview();
                 renderTimeSlots();
                 return;
