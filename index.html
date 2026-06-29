@@ -288,27 +288,6 @@
         const todayStr = new Date().toISOString().split('T')[0];
         dateInput.setAttribute('min', todayStr);
 
-        // Update Panel Diagnostik Visual di Website
-        function setDatabaseLog(statusText, infoText, isSuccess) {
-            const statusEl = document.getElementById('debug-status');
-            const infoEl = document.getElementById('debug-info');
-            const dotEl = document.getElementById('debug-dot');
-
-            statusEl.innerText = statusText;
-            infoEl.innerText = "• Log: " + infoText;
-
-            if (isSuccess === true) {
-                statusEl.className = "text-green-400 font-bold";
-                dotEl.className = "text-green-500 animate-pulse";
-            } else if (isSuccess === false) {
-                statusEl.className = "text-red-500 font-bold";
-                dotEl.className = "text-red-500";
-            } else {
-                statusEl.className = "text-yellow-400 font-bold";
-                dotEl.className = "text-yellow-400 animate-pulse";
-            }
-        }
-
         // Penyeragaman tanggal secara ketat
         function normalizeDateStr(dateVal) {
             if (!dateVal) return "";
@@ -374,56 +353,53 @@
 
             setDatabaseLog("Menghubungkan...", "Mencoba mengunduh database dari Google Sheets...", null);
 
-            // Melakukan pembacaan data via POST (POST request tidak pernah disimpan di cache browser)
-            fetch(SCRIPT_URL, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'text/plain'
-                },
-                body: JSON.stringify({ action: 'read' })
-            })
-            .then(response => {
-                if (!response.ok) throw new Error("HTTP Status Error: " + response.status);
-                return response.json();
-            })
-            .then(data => {
-                if (Array.isArray(data)) {
-                    globalBookings = [];
-                    data.forEach(b => {
-                        const capsterVal = getPropValue(b, 'Capster');
-                        const tanggalVal = getPropValue(b, 'Tanggal');
-                        const jamVal = getPropValue(b, 'Jam');
+            // Menambahkan Cache Buster (?_cb=Timestamp) agar browser tidak menyajikan data kedaluwarsa
+            const cacheBuster = "?_cb=" + new Date().getTime();
 
-                        const capsterKey = capsterVal ? capsterVal.toLowerCase() : '';
-                        const dateStr = normalizeDateStr(tanggalVal);
-                        
-                        const blockedHours = extractHoursFromRange(jamVal);
-                        blockedHours.forEach(hour => {
-                            globalBookings.push({
-                                date: dateStr,
-                                time: hour,
-                                capster: capsterKey
+            // GET Request dengan URL murni bebas dari CORS preflight block
+            fetch(SCRIPT_URL + cacheBuster)
+                .then(response => {
+                    if (!response.ok) throw new Error("HTTP Status Error: " + response.status);
+                    return response.json();
+                })
+                .then(data => {
+                    if (Array.isArray(data)) {
+                        globalBookings = [];
+                        data.forEach(b => {
+                            const capsterVal = getPropValue(b, 'Capster');
+                            const tanggalVal = getPropValue(b, 'Tanggal');
+                            const jamVal = getPropValue(b, 'Jam');
+
+                            const capsterKey = capsterVal ? capsterVal.toLowerCase() : '';
+                            const dateStr = normalizeDateStr(tanggalVal);
+                            
+                            const blockedHours = extractHoursFromRange(jamVal);
+                            blockedHours.forEach(hour => {
+                                globalBookings.push({
+                                    date: dateStr,
+                                    time: hour,
+                                    capster: capsterKey
+                                });
                             });
                         });
-                    });
-                    setDatabaseLog("Aktif (Tersinkronisasi)", `Koneksi stabil. Berhasil memuat ${data.length} baris data booking.`, true);
+                        setDatabaseLog("Aktif (Tersinkronisasi)", `Koneksi stabil. Berhasil memuat ${data.length} baris data booking.`, true);
+                        renderLiveOverview();
+                        renderTimeSlots();
+                    } else {
+                        // MEMBONGKAR & MENAMPILKAN PESAN ERROR ASLI DARI GOOGLE SHEET
+                        let pesanErrorGoogle = "Format data dari Google API salah.";
+                        if (data && data.error) {
+                            pesanErrorGoogle = data.error;
+                        }
+                        setDatabaseLog("Galat Google Sheet", pesanErrorGoogle, false);
+                    }
+                })
+                .catch(err => {
+                    console.error("Koneksi database Google Sheets bermasalah:", err);
+                    setDatabaseLog("Gagal Sinkronisasi", "Gagal membaca database Google Sheets. Aplikasi berjalan mode offline.", false);
                     renderLiveOverview();
                     renderTimeSlots();
-                } else {
-                    // MEMBONGKAR & MENAMPILKAN PESAN ERROR ASLI DARI GOOGLE SHEET
-                    let pesanErrorGoogle = "Format data dari Google API salah.";
-                    if (data && data.error) {
-                        pesanErrorGoogle = data.error;
-                    }
-                    setDatabaseLog("Galat Google Sheet", pesanErrorGoogle, false);
-                }
-            })
-            .catch(err => {
-                console.error("Koneksi database Google Sheets bermasalah:", err);
-                setDatabaseLog("Gagal Sinkronisasi", "Gagal membaca database Google Sheets. Aplikasi berjalan mode offline.", false);
-                renderLiveOverview();
-                renderTimeSlots();
-            });
+                });
         }
 
         // Fungsi kontrol pengaturan tampilan visibilitas langkah (step-by-step visibility)
@@ -611,7 +587,7 @@
                 // Tarik database langsung dari Google Sheets
                 fetchGlobalBookings();
             } else {
-                slotsContainer.classList.add('hidden');
+                slotsContainer.add('hidden');
                 placeholderText.classList.remove('hidden');
             }
             
@@ -757,7 +733,7 @@
         document.getElementById('cust-name').addEventListener('input', updateCart);
         document.getElementById('cust-whatsapp').addEventListener('input', updateCart);
 
-        // Pengiriman Data Form yang Kompatibel (RAW JSON TRANSFERS)
+        // Pengiriman Data Form (MENGGUNAKAN NATIVE RAW JSON)
         function submitBooking() {
             const name = document.getElementById('cust-name').value.trim();
             const whatsapp = document.getElementById('cust-whatsapp').value.trim();
