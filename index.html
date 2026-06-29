@@ -227,7 +227,7 @@
         // ========================================================
         // TEMPELKAN URL WEB APP YANG ANDA SALIN PADA LANGKAH 4 DI SINI:
         // ========================================================
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxCrKalTnZPP3guN-Vfi_lfTB6jsrm5p8LFKGvXqi5TQFJ7u3hyXd1wfem1Jp8afssc/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxsLDJxGcPw9txkk5fb2TjaRpxgcxDVdam9qu5lbcoTe1Ab4d9drpg-ml4sxNdsjXWC/exec";
 
         // Database Layanan Barbershop beserta Aturan Durasi Jam
         const capsterData = {
@@ -296,7 +296,7 @@
             return str;
         }
 
-        // Pembaca nilai kolom Google Sheets secara fleksibel (Abaikan Spasi & Huruf Kapital)
+        // Pembaca nilai kolom Google Sheets secara fleksibel
         function getPropValue(obj, keyName) {
             const targetKey = keyName.toLowerCase().replace(/\s+/g, '');
             for (let key in obj) {
@@ -333,7 +333,7 @@
 
         // AMBIL DATA ONLINE LANGSUNG DARI GOOGLE SHEET (DENGAN SYSTEM ANTI-CACHE BROWSER)
         function fetchGlobalBookings() {
-            if (SCRIPT_URL === "https://docs.google.com/spreadsheets/d/1usO_qZa_brz4xgX_O2wskuAm242vfQ_TZvYBRuMOM3Y/edit?gid=0#gid=0" || SCRIPT_URL.trim() === "") {
+            if (SCRIPT_URL === "https://script.google.com/macros/s/AKfycbxsLDJxGcPw9txkk5fb2TjaRpxgcxDVdam9qu5lbcoTe1Ab4d9drpg-ml4sxNdsjXWC/exec" || SCRIPT_URL.trim() === "") {
                 renderLiveOverview();
                 renderTimeSlots();
                 return;
