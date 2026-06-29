@@ -33,7 +33,7 @@
     <!-- Container Utama (Simulasi Device Mobile) -->
     <div class="w-full max-w-md min-h-screen bg-white shadow-2xl flex flex-col relative pb-28">
         
-        <!-- HEADER UTAMA DENGAN LATAR BELAKANG GAMBAR & LOGO -->
+        <!-- HEADER UTAMA DENGAL LATAR BELAKANG GAMBAR & LOGO -->
         <header class="text-white p-6 rounded-b-[2.5rem] shadow-lg relative overflow-hidden bg-cover bg-center min-h-[170px] flex items-center" 
                 style="background-image: linear-gradient(rgba(26, 26, 26, 0.75), rgba(26, 26, 26, 0.85)), url('https://upld.zone.id/uploads/vxir5xiq/c675e2cd-0a01-4e9d-81cb-c47aee8189d8.webp');">
             <div class="flex items-center gap-4 w-full relative z-10">
@@ -227,7 +227,7 @@
         // ========================================================
         // TEMPELKAN URL WEB APP YANG ANDA SALIN PADA LANGKAH 4 DI SINI:
         // ========================================================
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxsLDJxGcPw9txkk5fb2TjaRpxgcxDVdam9qu5lbcoTe1Ab4d9drpg-ml4sxNdsjXWC/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbymYQPuHGezcNVmqPHwVGV2cDP_vgNp9a-rLcCdO9tvLcjz_5znpL9t0FZp6JXWrI-A/exec";
 
         // Database Layanan Barbershop beserta Aturan Durasi Jam
         const capsterData = {
@@ -298,9 +298,9 @@
 
         // Pembaca nilai kolom Google Sheets secara fleksibel
         function getPropValue(obj, keyName) {
-            const targetKey = keyName.toLowerCase().replace(/\s+/g, '');
+            const targetKey = keyName.toLowerCase().replace(/[^a-z0-9]/g, '');
             for (let key in obj) {
-                if (key.toLowerCase().replace(/\s+/g, '') === targetKey) {
+                if (key.toLowerCase().replace(/[^a-z0-9]/g, '') === targetKey) {
                     return obj[key];
                 }
             }
@@ -333,7 +333,7 @@
 
         // AMBIL DATA ONLINE LANGSUNG DARI GOOGLE SHEET (DENGAN SYSTEM ANTI-CACHE BROWSER)
         function fetchGlobalBookings() {
-            if (SCRIPT_URL === "https://script.google.com/macros/s/AKfycbxsLDJxGcPw9txkk5fb2TjaRpxgcxDVdam9qu5lbcoTe1Ab4d9drpg-ml4sxNdsjXWC/exec" || SCRIPT_URL.trim() === "") {
+            if (SCRIPT_URL === "https://script.google.com/macros/s/AKfycbymYQPuHGezcNVmqPHwVGV2cDP_vgNp9a-rLcCdO9tvLcjz_5znpL9t0FZp6JXWrI-A/exec" || SCRIPT_URL.trim() === "") {
                 renderLiveOverview();
                 renderTimeSlots();
                 return;
@@ -706,7 +706,7 @@
         document.getElementById('cust-name').addEventListener('input', updateCart);
         document.getElementById('cust-whatsapp').addEventListener('input', updateCart);
 
-        // Pengiriman Data Form yang Kompatibel
+        // Pengiriman Data Form yang Kompatibel (MENGGUNAKAN NATIVE FORMDATA AGAR LOLOS SENSOR BROWSER HP)
         function submitBooking() {
             const name = document.getElementById('cust-name').value.trim();
             const whatsapp = document.getElementById('cust-whatsapp').value.trim();
@@ -743,27 +743,23 @@
             const endHourStr = endIndex < availableHours.length ? availableHours[endIndex] : "22:00";
             const formattedTimeRange = `${selectedTime} - ${endHourStr} (${duration} Jam)`;
 
-            // Format data URLSearchParams
-            const postData = new URLSearchParams({
-                'Timestamp': new Date().toLocaleString('id-ID'),
-                'Nama': name,
-                'WhatsApp': whatsapp,
-                'Capster': capsterData[selectedCapster].name,
-                'Layanan': servicesStr,
-                'Tanggal': selectedDate,
-                'Jam': formattedTimeRange, // Menulis range waktu penuh ke Google Sheets
-                'Metode_Pembayaran': selectedPayment,
-                'Total': totalStr
-            }).toString();
+            // MENGGUNAKAN NATIVE FORMDATA OBJECT (DIJAMIN LOLOS DARI SENSOR BROWSER SMARTPHONE MANAPUN)
+            const formData = new FormData();
+            formData.append('Timestamp', new Date().toLocaleString('id-ID'));
+            formData.append('Nama', name);
+            formData.append('WhatsApp', whatsapp);
+            formData.append('Capster', capsterData[selectedCapster].name);
+            formData.append('Layanan', servicesStr);
+            formData.append('Tanggal', selectedDate);
+            formData.append('Jam', formattedTimeRange);
+            formData.append('Metode_Pembayaran', selectedPayment);
+            formData.append('Total', totalStr);
 
             // POST ke Google Apps Script
             fetch(SCRIPT_URL, {
                 method: 'POST',
                 mode: 'no-cors',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: postData
+                body: formData // Kirim objek Form murni tanpa re-write header manual
             })
             .then(() => {
                 document.getElementById('qris-container').classList.add('hidden');
