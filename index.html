@@ -189,6 +189,16 @@
             </div>
         </section>
 
+        <!-- FITUR DIAGNOSTIK KONEKSI DATABASE (UNTUK TRACKING JALUR DATA) -->
+        <div class="m-4 p-3.5 bg-slate-900 text-green-400 rounded-xl font-mono text-[10px] space-y-1 shadow-inner">
+            <p class="font-bold text-yellow-400 border-b border-slate-800 pb-1 flex items-center justify-between">
+                <span>🔧 PANEL DIAGNOSTIK DATABASE</span>
+                <span class="animate-pulse" id="debug-dot">●</span>
+            </p>
+            <p>• Status Koneksi: <span id="debug-status" class="text-yellow-300 font-bold">Menghubungkan...</span></p>
+            <p id="debug-info" class="text-slate-400">• Log: Menunggu aksi pengguna.</p>
+        </div>
+
         <!-- FOOTER SUMMARY & CART -->
         <div class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white border-t border-slate-100 p-4 flex items-center justify-between shadow-2xl z-40">
             <div>
@@ -227,7 +237,7 @@
         // ========================================================
         // TEMPELKAN URL WEB APP YANG ANDA SALIN PADA TAHAP 1 DI SINI:
         // ========================================================
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxBGGeOHqSvjroUzUoDNDbeHLH1cRxsTK_HQw8KDpuWLHkKcoDpPlJocDaeDodQBpyK/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyfNQQRi-oIXeozK2Qqh_VrqC5HA-UTS3Okj3dwjwy4Tyx4Y0eQWW9rgd1pGbmjDAUZ/exec";
 
         // Database Layanan Barbershop beserta Aturan Durasi Jam
         const capsterData = {
@@ -277,6 +287,27 @@
         const dateInput = document.getElementById('booking-date');
         const todayStr = new Date().toISOString().split('T')[0];
         dateInput.setAttribute('min', todayStr);
+
+        // Update Panel Diagnostik Visual di Website
+        function setDatabaseLog(statusText, infoText, isSuccess) {
+            const statusEl = document.getElementById('debug-status');
+            const infoEl = document.getElementById('debug-info');
+            const dotEl = document.getElementById('debug-dot');
+
+            statusEl.innerText = statusText;
+            infoEl.innerText = "• Log: " + infoText;
+
+            if (isSuccess === true) {
+                statusEl.className = "text-green-400 font-bold";
+                dotEl.className = "text-green-500 animate-pulse";
+            } else if (isSuccess === false) {
+                statusEl.className = "text-red-500 font-bold";
+                dotEl.className = "text-red-500";
+            } else {
+                statusEl.className = "text-yellow-400 font-bold";
+                dotEl.className = "text-yellow-400 animate-pulse";
+            }
+        }
 
         // Penyeragaman tanggal secara ketat
         function normalizeDateStr(dateVal) {
@@ -331,13 +362,16 @@
             }
         }
 
-        // PEMBACAAN DATA BARU: MENGGUNAKAN METODE POST 'READ' (100% BEBAS DARI BLOKIR CACHE REDIRECT)
+        // AMBIL DATA ONLINE LANGSUNG DARI GOOGLE SHEET (DENGAN SYSTEM ANTI-CACHE BROWSER)
         function fetchGlobalBookings() {
-            if (SCRIPT_URL === "https://script.google.com/macros/s/AKfycbxBGGeOHqSvjroUzUoDNDbeHLH1cRxsTK_HQw8KDpuWLHkKcoDpPlJocDaeDodQBpyK/exec" || SCRIPT_URL.trim() === "") {
+            if (SCRIPT_URL === "https://script.google.com/macros/s/AKfycbyfNQQRi-oIXeozK2Qqh_VrqC5HA-UTS3Okj3dwjwy4Tyx4Y0eQWW9rgd1pGbmjDAUZ/exec" || SCRIPT_URL.trim() === "") {
+                setDatabaseLog("Mode Offline / Belum diatur", "SCRIPT_URL belum diganti dengan tautan Web App Anda.", null);
                 renderLiveOverview();
                 renderTimeSlots();
                 return;
             }
+
+            setDatabaseLog("Menghubungkan...", "Mencoba mengunduh database dari Google Sheets...", null);
 
             // Melakukan pembacaan data via POST (POST request tidak pernah disimpan di cache browser)
             fetch(SCRIPT_URL, {
@@ -347,7 +381,10 @@
                 },
                 body: JSON.stringify({ action: 'read' })
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) throw new Error("HTTP Status Error: " + response.status);
+                return response.json();
+            })
             .then(data => {
                 if (Array.isArray(data)) {
                     globalBookings = [];
@@ -364,19 +401,23 @@
                             globalBookings.push({
                                 date: dateStr,
                                 time: hour,
-                                capster: capsterKey
+                                  capster: capsterKey
+                                });
                             });
                         });
-                    });
+                        setDatabaseLog("Terhubung (Online)", `Berhasil memuat ${data.length} baris booking dari Google Sheets secara real-time.`, true);
+                        renderLiveOverview();
+                        renderTimeSlots();
+                    } else {
+                        setDatabaseLog("Error Otorisasi", "Respons Google salah. Pastikan deployment diatur untuk 'Anyone'.", false);
+                    }
+                })
+                .catch(err => {
+                    console.error("CORS / Network Error:", err);
+                    setDatabaseLog("Gagal Sinkronisasi", "Masalah jaringan / CORS Google. Periksa URL Anda.", false);
                     renderLiveOverview();
                     renderTimeSlots();
-                }
-            })
-            .catch(err => {
-                console.error("Koneksi database Google Sheets bermasalah:", err);
-                renderLiveOverview();
-                renderTimeSlots();
-            });
+                });
         }
 
         // Fungsi kontrol pengaturan tampilan visibilitas langkah (step-by-step visibility)
@@ -760,7 +801,7 @@
                 'Total': totalStr
             };
 
-            // POST ke Google Apps Script dengan format JSON mentah (Membasmi silent block browser)
+            // POST ke Google Apps Script dengan format JSON mentah
             fetch(SCRIPT_URL, {
                 method: 'POST',
                 mode: 'no-cors',
