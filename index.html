@@ -17,7 +17,7 @@
 </head>
 <body class="bg-gray-100 text-gray-900 font-sans min-h-screen flex justify-center">
 
-    <!-- Container Utama Mobile -->
+    <!-- Container Utama Tampilan Mobile -->
     <div class="w-full max-w-md bg-white shadow-2xl min-h-screen flex flex-col relative pb-28">
         
         <!-- Header Hero Section -->
@@ -35,13 +35,13 @@
             </div>
         </header>
 
-        <!-- Ketentuan Aturan -->
+        <!-- Ketentuan Aturan S ONE BARBERSHOP -->
         <div class="p-4 bg-amber-50 border-l-4 border-amber-500 text-xs text-amber-900 space-y-1">
             <p class="font-bold"><i class="fas fa-exclamation-triangle mr-1"></i> Ketentuan Booking S ONE:</p>
             <ul class="list-disc pl-4 space-y-0.5">
                 <li>Booking minimal dilakukan <b>1 jam sebelum kedatangan</b>.</li>
                 <li>Toleransi keterlambatan maksimal <b>15 menit</b>, lewat dari itu slot batal.</li>
-                <li>Satu slot booking hanya untuk <b>1 orang</b>.</li>
+                <li>Satu slot booking hanya berlaku untuk <b>1 orang</b>.</li>
                 <li>Jika datang lebih awal/terlambat, harap maklum jika perlu menunggu jika capster masih melayani pelanggan lain.</li>
             </ul>
         </div>
@@ -60,7 +60,7 @@
                 <i class="fas fa-circle-notch animate-spin mr-1"></i> Memuat data terbaru...
             </div>
             <div id="schedule-container" class="hidden grid grid-cols-2 gap-2 text-xs"></div>
-            <p id="no-schedule" class="hidden text-xs text-gray-500 text-center py-2 bg-gray-100 rounded">Belum ada booking hari ini. Semua slot kosong!</p>
+            <p id="no-schedule" class="hidden text-xs text-gray-500 text-center py-2 bg-gray-100 rounded">Belum ada booking hari ini. Semua slot masih kosong!</p>
         </section>
 
         <!-- Section 2: Pilih Capster -->
@@ -210,10 +210,14 @@
             fetchExistingBookings();
         });
 
-        // Menarik data dari Google Sheet dengan metode Cache-Busting
+        // Menarik data dari Google Sheet dengan sistem deteksi eror transparan & anti-cache
         function fetchExistingBookings() {
             if (!WEB_APP_URL || WEB_APP_URL.includes("placeholder")) {
-                document.getElementById('loading-schedule').innerHTML = "<i class='fas fa-info-circle text-amber-500 mr-1'></i> Harap pasang URL Google Web App Anda.";
+                document.getElementById('loading-schedule').innerHTML = `
+                    <div class="text-amber-600 p-2 bg-amber-50 rounded border border-amber-200 text-[11px]">
+                        <i class="fas fa-info-circle mr-1"></i> Harap ganti variabel <b>WEB_APP_URL</b> di baris kode HTML dengan URL Anda.
+                    </div>
+                `;
                 return;
             }
 
@@ -221,17 +225,48 @@
             document.getElementById('schedule-container').classList.add('hidden');
             document.getElementById('no-schedule').classList.add('hidden');
 
-            // Tambahkan timestamp (_t) agar browser HP dipaksa mengambil data baru, bukan cache lama
+            // Cache-Busting menggunakan _t=Date.now() agar browser mengambil data yang paling baru
             fetch(`${WEB_APP_URL}?action=get&_t=${Date.now()}`)
-                .then(res => res.json())
-                .then(data => {
-                    existingBookings = data;
-                    renderTodaySchedule();
-                    document.getElementById('loading-schedule').classList.add('hidden');
+                .then(res => {
+                    if (!res.ok) {
+                        throw new Error("HTTP Status Eror: " + res.status);
+                    }
+                    return res.text(); // Ambil teks mentah sebelum di-parse ke JSON
+                })
+                .then(text => {
+                    try {
+                        const data = JSON.parse(text);
+                        if (data.status === "error") {
+                            throw new Error(data.message);
+                        }
+                        
+                        existingBookings = data;
+                        renderTodaySchedule();
+                        document.getElementById('loading-schedule').classList.add('hidden');
+                    } catch(jsonErr) {
+                        console.error("Format Response Error:", text);
+                        // Indikasi kuat URL yang disalin masih berakhiran /dev atau butuh login akun Google
+                        if (text.includes("login") || text.includes("Google Accounts")) {
+                            throw new Error("Hak akses Google Apps Script Anda dibatasi (Butuh Login). Ganti opsi pengaturan deployment Anda menjadi 'Anyone' (Siapa Saja).");
+                        } else {
+                            throw new Error("Data Google Sheet tidak sesuai format JSON yang valid.");
+                        }
+                    }
                 })
                 .catch(err => {
                     console.error("Gagal sinkronisasi data:", err);
-                    document.getElementById('loading-schedule').innerHTML = "<span class='text-red-500'><i class='fas fa-exclamation-circle'></i> Gagal memuat data terbaru.</span>";
+                    let cleanErrorMsg = err.message;
+                    
+                    if (err.message.includes("Failed to fetch")) {
+                        cleanErrorMsg = "Sambungan ke Google Sheets diblokir (CORS) atau terputus. Pastikan link diakhiri dengan <b>/exec</b> dan dideploy dengan akses <b>'Anyone'</b>.";
+                    }
+                    
+                    document.getElementById('loading-schedule').innerHTML = `
+                        <div class="text-red-500 p-3 bg-red-50 rounded border border-red-200 text-left">
+                            <p class="font-bold text-xs"><i class="fas fa-exclamation-circle mr-1"></i> Sinkronisasi Database Gagal</p>
+                            <p class="text-[10px] mt-1 text-gray-600 font-mono">${cleanErrorMsg}</p>
+                        </div>
+                    `;
                 });
         }
 
@@ -370,7 +405,6 @@
                 if (isToday) {
                     const [h, m] = time.split(':').map(Number);
                     
-                    // Ambil waktu sekarang dalam WIB
                     const utcNow = now.getTime() + (now.getTimezoneOffset() * 60000);
                     const wibNow = new Date(utcNow + (3600000 * 7));
                     
@@ -416,65 +450,33 @@
             else qrisBox.classList.add('hidden');
         }
 
-        // Menarik data dari Google Sheet dengan sistem deteksi eror transparan
-        function fetchExistingBookings() {
-            if (!WEB_APP_URL || WEB_APP_URL.includes("placeholder")) {
-                document.getElementById('loading-schedule').innerHTML = `
-                    <div class="text-amber-600 p-2 bg-amber-50 rounded border border-amber-200 text-[11px]">
-                        <i class="fas fa-info-circle mr-1"></i> Harap ganti variabel <b>WEB_APP_URL</b> di baris kode HTML dengan URL Anda.
-                    </div>
-                `;
-                return;
-            }
+        function submitBooking() {
+            const name = document.getElementById('cust-name').value.trim();
+            const whatsapp = document.getElementById('cust-wa').value.trim();
+            const date = document.getElementById('booking-date').value;
+            const payment = document.querySelector('input[name="payment_method"]:checked').value;
+            const total = selectedServices.reduce((sum, item) => sum + item.price, 0);
 
-            document.getElementById('loading-schedule').classList.remove('hidden');
-            document.getElementById('schedule-container').classList.add('hidden');
-            document.getElementById('no-schedule').classList.add('hidden');
+            if (!selectedCapster) return alert("Harap pilih Capster.");
+            if (selectedServices.length === 0) return alert("Pilih minimal 1 layanan.");
+            if (!name || !whatsapp) return alert("Nama dan WhatsApp wajib diisi.");
+            if (!selectedTime) return alert("Pilih jam kedatangan.");
 
-            // Cache-Busting menggunakan _t=Date.now() agar browser mengambil data yang paling baru
-            fetch(`${WEB_APP_URL}?action=get&_t=${Date.now()}`)
-                .then(res => {
-                    if (!res.ok) {
-                        throw new Error("HTTP Status Eror: " + res.status);
-                    }
-                    return res.text(); // Ambil teks mentah sebelum di-parse ke JSON
-                })
-                .then(text => {
-                    try {
-                        const data = JSON.parse(text);
-                        if (data.status === "error") {
-                            throw new Error(data.message);
-                        }
-                        
-                        existingBookings = data;
-                        renderTodaySchedule();
-                        document.getElementById('loading-schedule').classList.add('hidden');
-                    } catch(jsonErr) {
-                        console.error("Format Response Error:", text);
-                        // Indikasi kuat URL yang disalin masih berakhiran /dev atau butuh login akun Google
-                        if (text.includes("login") || text.includes("Google Accounts")) {
-                            throw new Error("Hak akses Google Apps Script Anda dibatasi (Butuh Login). Ganti opsi pengaturan deployment Anda menjadi 'Anyone' (Siapa Saja).");
-                        } else {
-                            throw new Error("Data Google Sheet tidak sesuai format JSON yang valid.");
-                        }
-                    }
-                })
-                .catch(err => {
-                    console.error("Gagal sinkronisasi data:", err);
-                    let cleanErrorMsg = err.message;
-                    
-                    if (err.message.includes("Failed to fetch")) {
-                        cleanErrorMsg = "Sambungan ke Google Sheets diblokir (CORS) atau terputus. Pastikan link diakhiri dengan <b>/exec</b> dan dideploy dengan akses <b>'Anyone'</b>.";
-                    }
-                    
-                    document.getElementById('loading-schedule').innerHTML = `
-                        <div class="text-red-500 p-3 bg-red-50 rounded border border-red-200 text-left">
-                            <p class="font-bold text-xs"><i class="fas fa-exclamation-circle mr-1"></i> Sinkronisasi Database Gagal</p>
-                            <p class="text-[10px] mt-1 text-gray-600 font-mono">${cleanErrorMsg}</p>
-                        </div>
-                    `;
-                });
-        }
+            const servicesText = selectedServices.map(s => s.name).join(', ');
+
+            alert("Menyimpan booking Anda, harap tunggu konfirmasi...");
+
+            const urlParams = new URLSearchParams({
+                action: "add",
+                name: name,
+                whatsapp: whatsapp,
+                capster: selectedCapster,
+                services: servicesText,
+                date: date,
+                time: selectedTime,
+                total: total,
+                payment: payment
+            });
 
             fetch(`${WEB_APP_URL}?${urlParams.toString()}`)
                 .then(res => res.json())
