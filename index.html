@@ -164,7 +164,7 @@
 
     <script>
         // MASUKKAN URL GOOGLE WEB APP ANDA DI SINI
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxrR4IBMgBmll501gNYAAtTezGvF7-_2NZKMY8ku__QLL-bPm3ls3nxa3i5YgUCuEbX/exec"; 
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxbJEScw3p0_XGtEQ7Ceih7Z1UUlxh5Q2z_GvvVqlxL24BVPha1u_KBUAL0aCDP_nN4ng/exec"; 
 
         const database = {
             "Chandra": [
@@ -231,7 +231,7 @@
                     if (!res.ok) {
                         throw new Error("HTTP Status Eror: " + res.status);
                     }
-                    return res.text(); // Ambil teks mentah sebelum di-parse ke JSON
+                    return res.text();
                 })
                 .then(text => {
                     try {
@@ -242,10 +242,15 @@
                         
                         existingBookings = data;
                         renderTodaySchedule();
+                        
+                        // Sinkronkan ulang slot tombol jika capster sudah sempat dipilih
+                        if (selectedCapster) {
+                            updateAvailableTimes();
+                        }
+                        
                         document.getElementById('loading-schedule').classList.add('hidden');
                     } catch(jsonErr) {
                         console.error("Format Response Error:", text);
-                        // Indikasi kuat URL yang disalin masih berakhiran /dev atau butuh login akun Google
                         if (text.includes("login") || text.includes("Google Accounts")) {
                             throw new Error("Hak akses Google Apps Script Anda dibatasi (Butuh Login). Ganti opsi pengaturan deployment Anda menjadi 'Anyone' (Siapa Saja).");
                         } else {
@@ -427,7 +432,12 @@
                     button.disabled = true;
                     button.className += "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed line-through";
                 } else {
-                    button.className += "bg-white text-gray-800 hover:border-yellow-accent hover:bg-yellow-50";
+                    // Beri penanda warna kuning jika waktu tersebut adalah waktu yang sedang dipilih
+                    if (selectedTime === time) {
+                        button.className += "bg-yellow-accent text-gray-950 border-yellow-accent font-bold";
+                    } else {
+                        button.className += "bg-white text-gray-800 hover:border-yellow-accent hover:bg-yellow-50";
+                    }
                     button.onclick = () => selectTimeSlot(time, button);
                 }
                 grid.appendChild(button);
@@ -492,9 +502,16 @@
                                       `Metode Pembayaran: ${payment}\n\n` +
                                       `*Toleransi Keterlambatan Maksimal 15 Menit.*`;
                         
-                        window.location.href = `https://wa.me/6281545878413?text=${encodeURIComponent(waMsg)}`; // Ganti ke nomor Anda
+                        window.location.href = `https://wa.me/6281545878413?text=${encodeURIComponent(waMsg)}`;
                     } else {
+                        // Jalankan aksi penguncian jika backend mendeteksi bentrok jadwal
                         alert("Gagal memproses booking: " + response.message);
+                        
+                        // Tarik ulang data jadwal terisi dari Google Sheets secara langsung
+                        fetchExistingBookings();
+                        
+                        // Reset variabel waktu terpilih karena slot tersebut sudah terkunci
+                        selectedTime = "";
                     }
                 })
                 .catch(err => {
