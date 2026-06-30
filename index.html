@@ -416,57 +416,63 @@
             else qrisBox.classList.add('hidden');
         }
 
-        function submitBooking() {
-            const name = document.getElementById('cust-name').value.trim();
-            const whatsapp = document.getElementById('cust-wa').value.trim();
-            const date = document.getElementById('booking-date').value;
-            const payment = document.querySelector('input[name="payment_method"]:checked').value;
-            const total = selectedServices.reduce((sum, item) => sum + item.price, 0);
+       // Menarik data dari Google Sheet dengan sistem deteksi eror transparan
+        function fetchExistingBookings() {
+            if (!WEB_APP_URL || WEB_APP_URL.includes("placeholder")) {
+                document.getElementById('loading-schedule').innerHTML = `
+                    <div class="text-amber-600 p-2 bg-amber-50 rounded border border-amber-200 text-[11px]">
+                        <i class="fas fa-info-circle mr-1"></i> Harap ganti variabel <b>WEB_APP_URL</b> di baris kode HTML dengan URL Anda.
+                    </div>
+                `;
+                return;
+            }
 
-            if (!selectedCapster) return alert("Harap pilih Capster.");
-            if (selectedServices.length === 0) return alert("Pilih minimal 1 layanan.");
-            if (!name || !whatsapp) return alert("Nama dan WhatsApp wajib diisi.");
-            if (!selectedTime) return alert("Pilih jam kedatangan.");
+            document.getElementById('loading-schedule').classList.remove('hidden');
+            document.getElementById('schedule-container').classList.add('hidden');
+            document.getElementById('no-schedule').classList.add('hidden');
 
-            const servicesText = selectedServices.map(s => s.name).join(', ');
-
-            alert("Menyimpan booking Anda, harap tunggu konfirmasi...");
-
-            const urlParams = new URLSearchParams({
-                action: "add",
-                name: name,
-                whatsapp: whatsapp,
-                capster: selectedCapster,
-                services: servicesText,
-                date: date,
-                time: selectedTime,
-                total: total,
-                payment: payment
-            });
-
-            fetch(`${WEB_APP_URL}?${urlParams.toString()}`)
-                .then(res => res.json())
-                .then(response => {
-                    if (response.status === "success") {
-                        const waMsg = `Halo S ONE BARBERSHOP! saya telah melakukan booking online:\n\n` +
-                                      `Nama: ${name}\n` +
-                                      `WhatsApp: ${whatsapp}\n` +
-                                      `Capster: ${selectedCapster}\n` +
-                                      `Layanan: ${servicesText}\n` +
-                                      `Waktu: ${date} / Jam ${selectedTime} WIB\n` +
-                                      `Total: Rp ${total.toLocaleString('id-ID')}\n` +
-                                      `Metode Pembayaran: ${payment}\n\n` +
-                                      `*Toleransi Keterlambatan Maksimal 15 Menit.*`;
+            // Cache-Busting menggunakan _t=Date.now() agar browser mengambil data yang paling baru
+            fetch(`${WEB_APP_URL}?action=get&_t=${Date.now()}`)
+                .then(res => {
+                    if (!res.ok) {
+                        throw new Error("HTTP Status Eror: " + res.status);
+                    }
+                    return res.text(); // Ambil teks mentah sebelum di-parse ke JSON
+                })
+                .then(text => {
+                    try {
+                        const data = JSON.parse(text);
+                        if (data.status === "error") {
+                            throw new Error(data.message);
+                        }
                         
-                        window.location.href = `https://wa.me/6281545878413?text=${encodeURIComponent(waMsg)}`; // Ganti ke nomor Anda
-                    } else {
-                        alert("Gagal memproses booking: " + response.message);
+                        existingBookings = data;
+                        renderTodaySchedule();
+                        document.getElementById('loading-schedule').classList.add('hidden');
+                    } catch(jsonErr) {
+                        console.error("Format Response Error:", text);
+                        // Indikasi kuat URL yang disalin masih berakhiran /dev atau butuh login akun Google
+                        if (text.includes("login") || text.includes("Google Accounts")) {
+                            throw new Error("Hak akses Google Apps Script Anda dibatasi (Butuh Login). Ganti opsi pengaturan deployment Anda menjadi 'Anyone' (Siapa Saja).");
+                        } else {
+                            throw new Error("Data Google Sheet tidak sesuai format JSON yang valid.");
+                        }
                     }
                 })
                 .catch(err => {
-                    console.error("Error:", err);
-                    alert("Koneksi lambat, mengalihkan Anda ke WhatsApp Admin secara manual...");
-                    window.location.href = `https://wa.me/6281234567890?text=Halo%20S%20ONE,%20saya%20ingin%20booking%20manual%20karena%20sistem%20sedang%20padat.`;
+                    console.error("Gagal sinkronisasi data:", err);
+                    let cleanErrorMsg = err.message;
+                    
+                    if (err.message.includes("Failed to fetch")) {
+                        cleanErrorMsg = "Sambungan ke Google Sheets diblokir (CORS) atau terputus. Pastikan link diakhiri dengan <b>/exec</b> dan dideploy dengan akses <b>'Anyone'</b>.";
+                    }
+                    
+                    document.getElementById('loading-schedule').innerHTML = `
+                        <div class="text-red-500 p-3 bg-red-50 rounded border border-red-200 text-left">
+                            <p class="font-bold text-xs"><i class="fas fa-exclamation-circle mr-1"></i> Sinkronisasi Database Gagal</p>
+                            <p class="text-[10px] mt-1 text-gray-600 font-mono">${cleanErrorMsg}</p>
+                        </div>
+                    `;
                 });
         }
     </script>
