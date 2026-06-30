@@ -416,7 +416,7 @@
             else qrisBox.classList.add('hidden');
         }
 
-       // Menarik data dari Google Sheet dengan sistem deteksi eror transparan
+        // Menarik data dari Google Sheet dengan sistem deteksi eror transparan
         function fetchExistingBookings() {
             if (!WEB_APP_URL || WEB_APP_URL.includes("placeholder")) {
                 document.getElementById('loading-schedule').innerHTML = `
@@ -473,6 +473,32 @@
                             <p class="text-[10px] mt-1 text-gray-600 font-mono">${cleanErrorMsg}</p>
                         </div>
                     `;
+                });
+        }
+
+            fetch(`${WEB_APP_URL}?${urlParams.toString()}`)
+                .then(res => res.json())
+                .then(response => {
+                    if (response.status === "success") {
+                        const waMsg = `Halo S ONE BARBERSHOP! saya telah melakukan booking online:\n\n` +
+                                      `Nama: ${name}\n` +
+                                      `WhatsApp: ${whatsapp}\n` +
+                                      `Capster: ${selectedCapster}\n` +
+                                      `Layanan: ${servicesText}\n` +
+                                      `Waktu: ${date} / Jam ${selectedTime} WIB\n` +
+                                      `Total: Rp ${total.toLocaleString('id-ID')}\n` +
+                                      `Metode Pembayaran: ${payment}\n\n` +
+                                      `*Toleransi Keterlambatan Maksimal 15 Menit.*`;
+                        
+                        window.location.href = `https://wa.me/6281234567890?text=${encodeURIComponent(waMsg)}`; // Ganti ke nomor Anda
+                    } else {
+                        alert("Gagal memproses booking: " + response.message);
+                    }
+                })
+                .catch(err => {
+                    console.error("Error:", err);
+                    alert("Koneksi lambat, mengalihkan Anda ke WhatsApp Admin secara manual...");
+                    window.location.href = `https://wa.me/6281545878413?text=Halo%20S%20ONE,%20saya%20ingin%20booking%20manual%20karena%20sistem%20sedang%20padat.`;
                 });
         }
     </script>
