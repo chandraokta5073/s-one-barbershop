@@ -1,525 +1,525 @@
 <index.html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>S ONE BARBERSHOP - Booking Online</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .yellow-accent { color: #FFCF40; }
-        .bg-yellow-accent { background-color: #FFCF40; }
-        .border-yellow-accent { border-color: #FFCF40; }
-        html { scroll-behavior: smooth; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>S ONE BARBERSHOP - From Ordinary to Extraordinary</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Google -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #FAFAFA;
+    }
+    .accent-color { color: #FFCF40; }
+    .bg-accent { background-color: #FFCF40; }
+    .border-accent { border-color: #FFCF40; }
+  </style>
 </head>
-<body class="bg-gray-100 text-gray-900 font-sans min-h-screen flex justify-center">
+<body class="max-w-md mx-auto min-h-screen shadow-lg bg-white relative pb-32">
 
-    <!-- Container Utama Tampilan Mobile -->
-    <div class="w-full max-w-md bg-white shadow-2xl min-h-screen flex flex-col relative pb-28">
-        
-        <!-- Header Hero Section -->
-        <header class="relative h-64 flex flex-col justify-between p-6 text-white bg-cover bg-center" style="background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.7)), url('https://upld.zone.id/uploads/vxir5xiq/c675e2cd-0a01-4e9d-81cb-c47aee8189d8.webp');">
-            <div class="flex items-center space-x-3">
-                <img src="https://upld.zone.id/uploads/vxir5xiq/img-0049.webp" alt="S ONE Logo" class="w-14 h-14 rounded-full border-2 border-yellow-accent shadow-lg">
-                <div>
-                    <h1 class="font-extrabold text-xl tracking-wider text-yellow-accent">S ONE BARBERSHOP</h1>
-                    <p class="text-xs italic text-gray-300">"From Ordinary to Extraordinary"</p>
-                </div>
-            </div>
-            <div class="mb-2">
-                <span class="bg-yellow-accent text-gray-900 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">@sonebarbershop</span>
-                <p class="text-xs text-gray-300 mt-2"><i class="fas fa-clock mr-1"></i> Jam Buka: 10:00 - 22:00 WIB</p>
-            </div>
-        </header>
+  <!-- HERO SECTION WITH BACKGROUND -->
+  <div class="relative h-64 flex flex-col justify-center items-center text-center px-4 bg-cover bg-center" 
+       style="background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.75)), url('https://upld.zone.id/uploads/vxir5xiq/c675e2cd-0a01-4e9d-81cb-c47aee8189d8.webp');">
+    <img src="https://upld.zone.id/uploads/vxir5xiq/img-0049.webp" alt="S ONE Logo" class="w-24 h-24 rounded-full border-4 border-[#FFCF40] mb-3 object-cover shadow-lg">
+    <h1 class="text-2xl font-extrabold text-white tracking-wider">S ONE BARBERSHOP</h1>
+    <p class="text-xs text-[#FFCF40] italic font-semibold mt-1">“From Ordinary to Extraordinary”</p>
+  </div>
 
-        <!-- Ketentuan Aturan S ONE BARBERSHOP -->
-        <div class="p-4 bg-amber-50 border-l-4 border-amber-500 text-xs text-amber-900 space-y-1">
-            <p class="font-bold"><i class="fas fa-exclamation-triangle mr-1"></i> Ketentuan Booking S ONE:</p>
-            <ul class="list-disc pl-4 space-y-0.5">
-                <li>Booking minimal dilakukan <b>1 jam sebelum kedatangan</b>.</li>
-                <li>Toleransi keterlambatan maksimal <b>15 menit</b>, lewat dari itu slot batal.</li>
-                <li>Satu slot booking hanya berlaku untuk <b>1 orang</b>.</li>
-                <li>Jika datang lebih awal/terlambat, harap maklum jika perlu menunggu jika capster masih melayani pelanggan lain.</li>
-            </ul>
-        </div>
+  <!-- NOTIFICATION & TERMS -->
+  <div class="p-4 bg-amber-50 border-y border-amber-200 text-xs text-amber-800 space-y-1">
+    <p class="font-bold">⚠️ Ketentuan Booking S ONE:</p>
+    <ul class="list-disc list-inside space-y-1">
+      <li>Pemesanan minimal 1 jam sebelum jam kedatangan.</li>
+      <li>Toleransi keterlambatan maksimal 15 menit, lewat dari itu slot dianggap batal.</li>
+      <li>Booking hanya berlaku untuk 1 orang per slot.</li>
+      <li>Pelanggan yang datang awal/terlambat harap bersedia antre jika capster masih melayani pelanggan lain.</li>
+    </ul>
+  </div>
 
-        <!-- Section 1: Jadwal Terisi Hari Ini -->
-        <section class="p-4">
-            <div class="flex justify-between items-center mb-3">
-                <h2 class="font-bold text-sm uppercase tracking-wider flex items-center text-gray-700">
-                    <i class="fas fa-calendar-alt mr-2 yellow-accent"></i> Jadwal Booking Hari Ini
-                </h2>
-                <button onclick="fetchExistingBookings()" class="text-xs text-amber-600 hover:text-amber-700 font-bold flex items-center">
-                    <i class="fas fa-sync-alt mr-1"></i> Segarkan
-                </button>
-            </div>
-            <div id="loading-schedule" class="text-center py-4 text-xs text-gray-500">
-                <i class="fas fa-circle-notch animate-spin mr-1"></i> Memuat data terbaru...
-            </div>
-            <div id="schedule-container" class="hidden grid grid-cols-2 gap-2 text-xs"></div>
-            <p id="no-schedule" class="hidden text-xs text-gray-500 text-center py-2 bg-gray-100 rounded">Belum ada booking hari ini. Semua slot masih kosong!</p>
-        </section>
+  <!-- LIVE SCHEDULE BOARD (TODAY) -->
+  <div class="p-5">
+    <h2 class="text-sm font-extrabold text-gray-800 tracking-wide uppercase mb-3 flex items-center gap-2">
+      <span class="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></span>
+      Jadwal Booking Hari Ini
+    </h2>
+    <div id="schedule-today" class="bg-gray-50 border border-gray-100 rounded-2xl p-4 text-xs text-gray-500 text-center">
+      Mengambil jadwal hari ini...
+    </div>
+  </div>
 
-        <!-- Section 2: Pilih Capster -->
-        <section class="p-4 bg-gray-50">
-            <h2 class="font-bold text-sm uppercase tracking-wider mb-3 text-gray-700">
-                <i class="fas fa-scissors mr-2 yellow-accent"></i> Pilih Capster Pilihanmu
-            </h2>
-            <div class="grid grid-cols-3 gap-3" id="capster-options">
-                <!-- Chandra -->
-                <div class="capster-card border-2 border-transparent bg-white rounded-lg p-2 text-center cursor-pointer shadow-sm hover:shadow transition" onclick="selectCapster('Chandra')" id="capster-Chandra">
-                    <img src="https://upld.zone.id/uploads/vxir5xiq/img-7154.webp" alt="Chandra" class="w-16 h-16 rounded-full mx-auto object-cover border-2 border-gray-200">
-                    <p class="font-bold text-xs mt-2">Chandra</p>
-                    <span class="text-[9px] text-gray-500">6 Layanan</span>
-                </div>
-                <!-- Vanusa -->
-                <div class="capster-card border-2 border-transparent bg-white rounded-lg p-2 text-center cursor-pointer shadow-sm hover:shadow transition" onclick="selectCapster('Vanusa')" id="capster-Vanusa">
-                    <img src="https://upld.zone.id/uploads/vxir5xiq/img-7152.webp" alt="Vanusa" class="w-16 h-16 rounded-full mx-auto object-cover border-2 border-gray-200">
-                    <p class="font-bold text-xs mt-2">Vanusa</p>
-                    <span class="text-[9px] text-gray-500">3 Layanan</span>
-                </div>
-                <!-- Rendi -->
-                <div class="capster-card border-2 border-transparent bg-white rounded-lg p-2 text-center cursor-pointer shadow-sm hover:shadow transition" onclick="selectCapster('Rendi')" id="capster-Rendi">
-                    <img src="https://upld.zone.id/uploads/vxir5xiq/img-7153.webp" alt="Rendi" class="w-16 h-16 rounded-full mx-auto object-cover border-2 border-gray-200">
-                    <p class="font-bold text-xs mt-2">Rendi</p>
-                    <span class="text-[9px] text-gray-500">3 Layanan</span>
-                </div>
-            </div>
-        </section>
+  <hr class="border-gray-100 my-2 mx-5">
 
-        <!-- Section 3: Katalog Layanan -->
-        <section class="p-4" id="catalog-section">
-            <h2 class="font-bold text-sm uppercase tracking-wider mb-1 text-gray-700">
-                <i class="fas fa-list-ul mr-2 yellow-accent"></i> Katalog Layanan
-            </h2>
-            <p class="text-xs text-gray-500 mb-3" id="catalog-hint">Pilih Capster terlebih dahulu untuk melihat katalog jasa.</p>
-            <div id="services-list" class="space-y-2"></div>
-        </section>
+  <!-- STEP 1: PILIH TUKANG CUKUR (BARBER) -->
+  <div class="p-5">
+    <h2 class="text-sm font-extrabold text-gray-800 tracking-wide uppercase mb-4">1. Pilih Barber & Layanan</h2>
+    <div class="grid grid-cols-3 gap-3" id="barber-selection">
+      <!-- Barber 1 -->
+      <button onclick="selectBarber('Chandra')" id="btn-Chandra" class="barber-card flex flex-col items-center p-3 border-2 border-gray-100 rounded-2xl bg-white hover:border-[#FFCF40] transition duration-200">
+        <img src="https://upld.zone.id/uploads/vxir5xiq/img-7154.webp" alt="Chandra" class="w-16 h-16 rounded-full object-cover border-2 border-gray-100 mb-2">
+        <span class="text-xs font-bold text-gray-800">Chandra</span>
+        <span class="text-[9px] text-gray-400 mt-0.5">Barberman</span>
+      </button>
+      <!-- Barber 2 -->
+      <button onclick="selectBarber('Vanusa')" id="btn-Vanusa" class="barber-card flex flex-col items-center p-3 border-2 border-gray-100 rounded-2xl bg-white hover:border-[#FFCF40] transition duration-200">
+        <img src="https://upld.zone.id/uploads/vxir5xiq/img-7152.webp" alt="Vanusa" class="w-16 h-16 rounded-full object-cover border-2 border-gray-100 mb-2">
+        <span class="text-xs font-bold text-gray-800">Vanusa</span>
+        <span class="text-[9px] text-gray-400 mt-0.5">Lady Barber</span>
+      </button>
+      <!-- Barber 3 -->
+      <button onclick="selectBarber('Rendi')" id="btn-Rendi" class="barber-card flex flex-col items-center p-3 border-2 border-gray-100 rounded-2xl bg-white hover:border-[#FFCF40] transition duration-200">
+        <img src="https://upld.zone.id/uploads/vxir5xiq/img-7153.webp" alt="Rendi" class="w-16 h-16 rounded-full object-cover border-2 border-gray-100 mb-2">
+        <span class="text-xs font-bold text-gray-800">Rendi</span>
+        <span class="text-[9px] text-gray-400 mt-0.5">Barberman</span>
+      </button>
+    </div>
+  </div>
 
-        <!-- Section 4: Formulir Pemesanan -->
-        <section id="booking-form-section" class="p-4 bg-gray-50 hidden border-t">
-            <h2 class="font-bold text-sm uppercase tracking-wider mb-3 text-gray-700">
-                <i class="fas fa-id-card mr-2 yellow-accent"></i> Lengkapi Data Booking
-            </h2>
-            
-            <div class="space-y-3 text-xs">
-                <div>
-                    <label class="block font-semibold mb-1">Nama Lengkap</label>
-                    <input type="text" id="cust-name" class="w-full p-2.5 border rounded focus:outline-none focus:ring-1 focus:ring-amber-500 text-sm" placeholder="Masukkan nama Anda">
-                </div>
-                <div>
-                    <label class="block font-semibold mb-1">Nomor WhatsApp (Aktif)</label>
-                    <input type="tel" id="cust-wa" class="w-full p-2.5 border rounded focus:outline-none focus:ring-1 focus:ring-amber-500 text-sm" placeholder="Contoh: 08123456789">
-                </div>
-                <div>
-                    <label class="block font-semibold mb-1">Pilih Tanggal Booking</label>
-                    <input type="date" id="booking-date" class="w-full p-2.5 border rounded focus:outline-none focus:ring-1 focus:ring-amber-500 text-sm" onchange="updateAvailableTimes()">
-                </div>
-                <div>
-                    <label class="block font-semibold mb-1">Pilih Jam Kedatangan</label>
-                    <div id="time-slots-grid" class="grid grid-cols-4 gap-2 mt-1"></div>
-                </div>
+  <!-- SERVICE CATALOG (DYNAMICS BASED ON BARBER) -->
+  <div id="catalog-section" class="px-5 hidden">
+    <p class="text-xs text-gray-500 mb-3 font-semibold">Daftar Layanan <span id="selected-barber-name-label"></span>:</p>
+    <div class="space-y-2.5" id="services-list">
+      <!-- Services injected here by JS -->
+    </div>
+  </div>
 
-                <!-- Metode Pembayaran -->
-                <div class="pt-2">
-                    <label class="block font-semibold mb-2">Metode Pembayaran</label>
-                    <div class="grid grid-cols-2 gap-3">
-                        <label class="border p-3 rounded-lg flex items-center justify-between cursor-pointer hover:bg-gray-100" id="pay-cash-label">
-                            <span class="flex items-center"><i class="fas fa-money-bill-wave mr-2 text-green-600"></i> Tunai</span>
-                            <input type="radio" name="payment_method" value="Tunai" checked onchange="toggleQRIS(false)">
-                        </label>
-                        <label class="border p-3 rounded-lg flex items-center justify-between cursor-pointer hover:bg-gray-100" id="pay-qris-label">
-                            <span class="flex items-center"><i class="fas fa-qrcode mr-2 text-indigo-600"></i> QRIS</span>
-                            <input type="radio" name="payment_method" value="QRIS" onchange="toggleQRIS(true)">
-                        </label>
-                    </div>
-                    
-                    <!-- QRIS Container -->
-                    <div id="qris-container" class="hidden mt-3 p-3 bg-indigo-50 border border-indigo-200 rounded-lg text-center">
-                        <p class="font-semibold text-indigo-900 mb-2">Silakan Scan Kode QRIS S ONE:</p>
-                        <img src="https://upld.zone.id/uploads/vxir5xiq/img-0642.webp" alt="QRIS S ONE" class="w-48 mx-auto border shadow rounded-md mb-2">
-                        <p class="text-[10px] text-indigo-700">Kirim bukti transfer saat kedatangan atau konfirmasi ke Admin.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Floating Cart Bar -->
-        <div class="fixed bottom-0 w-full max-w-md bg-white border-t border-gray-200 p-4 flex items-center justify-between shadow-lg z-50">
-            <div>
-                <p class="text-[10px] text-gray-500 uppercase tracking-wider">Total Pembayaran</p>
-                <p class="font-extrabold text-lg text-amber-600" id="cart-total">Rp 0</p>
-                <p class="text-[9px] text-gray-400 truncate w-48" id="selected-summary">Belum memilih layanan</p>
-            </div>
-            <button onclick="submitBooking()" class="bg-yellow-accent text-gray-950 font-bold px-6 py-3 rounded-lg shadow-md hover:bg-amber-400 transition text-sm flex items-center space-x-2">
-                <span>Pesan Sekarang</span>
-                <i class="fas fa-paper-plane"></i>
-            </button>
-        </div>
-
+  <!-- STEP 2: PILIH TANGGAL & WAKTU -->
+  <div id="datetime-section" class="p-5 hidden">
+    <h2 class="text-sm font-extrabold text-gray-800 tracking-wide uppercase mb-3">2. Pilih Tanggal & Waktu</h2>
+    
+    <!-- Date Input -->
+    <div class="mb-4">
+      <label class="block text-xs text-gray-500 mb-1 font-semibold">Pilih Tanggal</label>
+      <input type="date" id="booking-date" onchange="onDateChanged()" class="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#FFCF40]">
     </div>
 
-    <script>
-        // MASUKKAN URL GOOGLE WEB APP ANDA DI SINI
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxbJEScw3p0_XGtEQ7Ceih7Z1UUlxh5Q2z_GvvVqlxL24BVPha1u_KBUAL0aCDP_nN4ng/exec"; 
+    <!-- Time Grid -->
+    <div>
+      <label class="block text-xs text-gray-500 mb-2 font-semibold">Pilih Jam Operasional (10.00 - 22.00 WIB)</label>
+      <div class="grid grid-cols-4 gap-2" id="time-grid">
+        <!-- Times injected by JS -->
+      </div>
+      <p class="text-[10px] text-gray-400 mt-2 italic">* Jam yang berwarna abu-abu sudah penuh/terlewati.</p>
+    </div>
+  </div>
 
-        const database = {
-            "Chandra": [
-                { id: "c1", name: "Haircut", price: 70000 },
-                { id: "c2", name: "Hair wash + massage", price: 15000 },
-                { id: "c3", name: "Keratin treatment", price: 250000 },
-                { id: "c4", name: "Chemical perming", price: 250000 },
-                { id: "c5", name: "Cornrow", price: 350000 },
-                { id: "c6", name: "Creambath", price: 150000 }
-            ],
-            "Vanusa": [
-                { id: "v1", name: "Haircut", price: 70000 },
-                { id: "v2", name: "Hair wash + massage", price: 15000 },
-                { id: "v3", name: "Creambath", price: 150000 }
-            ],
-            "Rendi": [
-                { id: "r1", name: "Haircut", price: 70000 },
-                { id: "r2", name: "Hair wash + massage", price: 15000 },
-                { id: "r3", name: "Creambath", price: 150000 }
-            ]
-        };
+  <!-- STEP 3: METODE PEMBAYARAN -->
+  <div id="payment-section" class="p-5 hidden">
+    <h2 class="text-sm font-extrabold text-gray-800 tracking-wide uppercase mb-3">3. Metode Pembayaran</h2>
+    <div class="grid grid-cols-2 gap-3 mb-4">
+      <button onclick="selectPayment('Tunai')" id="pay-Tunai" class="payment-card border-2 border-gray-100 p-4 rounded-2xl flex flex-col items-center justify-center font-bold text-xs text-gray-700 hover:border-[#FFCF40] transition bg-white">
+        💰 Tunai di Kasir
+      </button>
+      <button onclick="selectPayment('QRIS')" id="pay-QRIS" class="payment-card border-2 border-gray-100 p-4 rounded-2xl flex flex-col items-center justify-center font-bold text-xs text-gray-700 hover:border-[#FFCF40] transition bg-white">
+        📱 QRIS (Scan Code)
+      </button>
+    </div>
 
-        let selectedCapster = "";
-        let selectedServices = [];
-        let selectedTime = "";
-        let existingBookings = [];
+    <!-- QRIS Image Container -->
+    <div id="qris-container" class="hidden flex flex-col items-center bg-gray-50 p-4 rounded-2xl border border-gray-200 mb-4 animate-fade-in">
+      <p class="text-[11px] text-center text-gray-500 mb-2">Silakan scan kode QRIS S ONE di bawah ini untuk membayar:</p>
+      <img src="https://upld.zone.id/uploads/vxir5xiq/img-0642.webp" alt="S ONE QRIS" class="w-48 h-auto rounded-lg shadow border border-gray-200">
+    </div>
+  </div>
 
-        // Fungsi mendapatkan tanggal lokal WIB (Asia/Jakarta) dengan aman di HP manapun
-        function getWIBDateString(date = new Date()) {
-            const offset = 7; // WIB UTC+7
-            const utc = date.getTime() + (date.getTimezoneOffset() * 60000);
-            const wibDate = new Date(utc + (3600000 * offset));
-            const yyyy = wibDate.getFullYear();
-            const mm = String(wibDate.getMonth() + 1).padStart(2, '0');
-            const dd = String(wibDate.getDate()).padStart(2, '0');
-            return `${yyyy}-${mm}-${dd}`;
+  <!-- STEP 4: DATA IDENTITAS -->
+  <div id="customer-section" class="p-5 hidden">
+    <h2 class="text-sm font-extrabold text-gray-800 tracking-wide uppercase mb-3">4. Informasi Pelanggan</h2>
+    <div class="space-y-3">
+      <div>
+        <label class="block text-xs text-gray-500 mb-1 font-semibold">Nama Lengkap</label>
+        <input type="text" id="cust-name" placeholder="Masukkan nama Anda" class="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#FFCF40]">
+      </div>
+      <div>
+        <label class="block text-xs text-gray-500 mb-1 font-semibold">Nomor WhatsApp</label>
+        <input type="tel" id="cust-wa" placeholder="Contoh: 0812345678" class="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#FFCF40]">
+      </div>
+    </div>
+  </div>
+
+  <!-- STICKY FOOTER CART & SUBMIT -->
+  <div class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white border-t border-gray-100 p-4 shadow-2xl flex items-center justify-between z-50">
+    <div>
+      <p class="text-[10px] text-gray-400 font-bold uppercase">Estimasi Total</p>
+      <p class="text-lg font-extrabold text-gray-900" id="cart-total">Rp 0</p>
+      <p class="text-[10px] text-gray-400" id="cart-duration">Durasi: 0 Jam</p>
+    </div>
+    <button onclick="submitBooking()" id="submit-btn" class="bg-gray-300 text-gray-500 font-bold px-6 py-3 rounded-xl text-sm transition-all duration-300 cursor-not-allowed" disabled>
+      Booking Sekarang
+    </button>
+  </div>
+
+  <!-- SUCCESS POPUP MODAL -->
+  <div id="success-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-6 hidden">
+    <div class="bg-white rounded-3xl w-full max-w-sm p-6 text-center animate-scale-up">
+      <div class="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">✓</div>
+      <h3 class="text-lg font-extrabold text-gray-900">Booking Berhasil!</h3>
+      <p class="text-xs text-gray-500 mt-2">Data pemesanan Anda telah terdaftar di database S ONE BARBERSHOP secara otomatis.</p>
+      <div class="my-4 p-3 bg-gray-50 rounded-xl text-left text-xs text-gray-600 space-y-1">
+        <p><strong>ID Booking:</strong> <span id="res-id" class="text-indigo-600 font-mono"></span></p>
+        <p><strong>Barber:</strong> <span id="res-barber"></span></p>
+        <p><strong>Waktu:</strong> <span id="res-time"></span></p>
+        <p><strong>Total:</strong> <span id="res-total"></span></p>
+      </div>
+      <button onclick="location.reload()" class="w-full bg-[#FFCF40] text-gray-900 font-bold py-3 rounded-xl text-sm hover:opacity-90 transition">
+        Selesai & Tutup
+      </button>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    // MASUKKAN URL GOOGLE APPS SCRIPT ANDA DI SINI
+    const API_URL = "https://script.google.com/macros/s/AKfycbyuE0y2osWjx-qa8eVgT7x418kqYrB2s8Hc8dMV6KHo11w-odR_TkHbLhf7sIAhGz5lzw/exec";
+
+    const BARBERS = {
+      Chandra: [
+        { name: "Haircut", price: 70000, duration: 1 },
+        { name: "Hair wash + massage", price: 15000, duration: 1 },
+        { name: "Creambath", price: 150000, duration: 1 },
+        { name: "Chemical perming", price: 250000, duration: 2 },
+        { name: "Keratin treatment", price: 250000, duration: 3 },
+        { name: "Cornrow", price: 350000, duration: 5 }
+      ],
+      Vanusa: [
+        { name: "Haircut", price: 70000, duration: 1 },
+        { name: "Hair wash + massage", price: 15000, duration: 1 },
+        { name: "Creambath", price: 150000, duration: 1 }
+      ],
+      Rendi: [
+        { name: "Haircut", price: 70000, duration: 1 },
+        { name: "Hair wash + massage", price: 15000, duration: 1 },
+        { name: "Creambath", price: 150000, duration: 1 }
+      ]
+    };
+
+    let selectedBarber = "";
+    let selectedServices = [];
+    let selectedDate = "";
+    let selectedTime = "";
+    let selectedPaymentMethod = "";
+    let databaseBookings = [];
+
+    // SET MINIMUM DATE TO TODAY
+    window.onload = function() {
+      const today = new Date();
+      // Format to WIB YYYY-MM-DD
+      const offset = today.getTimezoneOffset() * 60000;
+      const localISOTime = (new Date(today.getTime() - offset)).toISOString().split('T')[0];
+      document.getElementById('booking-date').min = localISOTime;
+      
+      fetchBookings();
+    };
+
+    // FETCH DATABASE FROM GOOGLE SHEETS
+    function fetchBookings() {
+      if(API_URL === "URL_WEB_APP_ANDA_DISINI") {
+        document.getElementById('schedule-today').innerText = "Belum terhubung ke API Google Sheets.";
+        return;
+      }
+      fetch(API_URL)
+        .then(res => res.json())
+        .then(data => {
+          databaseBookings = data;
+          renderTodaySchedule();
+        })
+        .catch(err => {
+          console.error(err);
+          document.getElementById('schedule-today').innerText = "Gagal memuat jadwal.";
+        });
+    }
+
+    // RENDER TODAY'S LIVE BOOKING BOARD
+    function renderTodaySchedule() {
+      const todayStr = new Date().toLocaleDateString('id-ID', { year: 'numeric', month: '2-digit', day: '2-digit' })
+        .split('/').reverse().join('-'); // YYYY-MM-DD format
+      
+      const todaysBookings = databaseBookings.filter(b => b.tanggal === todayStr);
+
+      if (todaysBookings.length === 0) {
+        document.getElementById('schedule-today').innerHTML = `
+          <p class="text-green-600 font-semibold">🟢 Belum ada booking hari ini.</p>
+          <p class="text-[10px] mt-0.5">Yuk, booking slot pertama Anda sekarang!</p>
+        `;
+        return;
+      }
+
+      let html = `<div class="grid grid-cols-1 gap-1 text-left">`;
+      todaysBookings.forEach(b => {
+        html += `<div class="flex justify-between items-center bg-white p-2 rounded-lg border border-gray-100">
+          <span class="font-bold text-gray-700">${b.barber}</span>
+          <span class="bg-[#FFCF40] text-gray-900 px-2 py-0.5 rounded font-mono font-semibold">${b.waktuMulai} - ${b.waktuSelesai}</span>
+        </div>`;
+      });
+      html += `</div>`;
+      document.getElementById('schedule-today').innerHTML = html;
+    }
+
+    // SELECT BARBER & SHOW THEIR CATALOG
+    function selectBarber(name) {
+      selectedBarber = name;
+      selectedServices = [];
+      selectedTime = "";
+      
+      document.querySelectorAll('.barber-card').forEach(card => {
+        card.classList.remove('border-[#FFCF40]', 'bg-amber-50/40');
+      });
+      document.getElementById(`btn-${name}`).classList.add('border-[#FFCF40]', 'bg-amber-50/40');
+
+      // Update Service List UI
+      const container = document.getElementById('services-list');
+      container.innerHTML = "";
+      
+      BARBERS[name].forEach((service, index) => {
+        const priceFormatted = "Rp " + service.price.toLocaleString('id-ID');
+        container.innerHTML += `
+          <label class="flex items-center justify-between p-3.5 border border-gray-100 rounded-xl bg-gray-50 cursor-pointer hover:bg-white transition">
+            <div class="flex items-center gap-3">
+              <input type="checkbox" onchange="toggleService('${service.name}', ${service.price}, ${service.duration})" class="w-4 h-4 text-[#FFCF40] border-gray-300 focus:ring-[#FFCF40] rounded">
+              <div>
+                <p class="text-xs font-bold text-gray-800">${service.name}</p>
+                <p class="text-[10px] text-gray-400 mt-0.5">${service.duration} Jam Durasi</p>
+              </div>
+            </div>
+            <span class="text-xs font-extrabold text-gray-700">${priceFormatted}</span>
+          </label>
+        `;
+      });
+
+      document.getElementById('selected-barber-name-label').innerText = name;
+      document.getElementById('catalog-section').classList.remove('hidden');
+      
+      updateCart();
+    }
+
+    // ADD/REMOVE SERVICES FROM CART
+    function toggleService(name, price, duration) {
+      const idx = selectedServices.findIndex(s => s.name === name);
+      if (idx > -1) {
+        selectedServices.splice(idx, 1);
+      } else {
+        selectedServices.push({ name, price, duration });
+      }
+      updateCart();
+      if(selectedDate) generateTimeSlots(); // Re-calculate time slots
+    }
+
+    // UPDATE ESTIMATED TOTALS
+    function updateCart() {
+      let total = 0;
+      let maxDuration = 0;
+      
+      selectedServices.forEach(s => {
+        total += s.price;
+        if(s.duration > maxDuration) {
+          maxDuration = s.duration; // Gunakan durasi terlama di antara semua layanan yang dipesan
+        }
+      });
+
+      document.getElementById('cart-total').innerText = "Rp " + total.toLocaleString('id-ID');
+      document.getElementById('cart-duration').innerText = `Durasi: ${maxDuration} Jam`;
+
+      if (selectedServices.length > 0) {
+        document.getElementById('datetime-section').classList.remove('hidden');
+      } else {
+        document.getElementById('datetime-section').classList.add('hidden');
+        document.getElementById('payment-section').classList.add('hidden');
+        document.getElementById('customer-section').classList.add('hidden');
+      }
+      validateForm();
+    }
+
+    // ON DATE CHANGE
+    function onDateChanged() {
+      selectedDate = document.getElementById('booking-date').value;
+      if (selectedDate) {
+        generateTimeSlots();
+        document.getElementById('payment-section').classList.remove('hidden');
+        document.getElementById('customer-section').classList.remove('hidden');
+      }
+      validateForm();
+    }
+
+    // CALCULATE MAX DURATION OF CART
+    function getCartMaxDuration() {
+      let max = 1;
+      selectedServices.forEach(s => {
+        if(s.duration > max) max = s.duration;
+      });
+      return max;
+    }
+
+    // GENERATE AVAILABLE TIME SLOTS (CHECKING GS DATABASE)
+    function generateTimeSlots() {
+      const timeGrid = document.getElementById('time-grid');
+      timeGrid.innerHTML = "";
+      
+      const cartDuration = getCartMaxDuration();
+      const now = new Date();
+      
+      // Filter Booking hari terpilih & barber terpilih
+      const bookedOnDate = databaseBookings.filter(b => b.tanggal === selectedDate && b.barber === selectedBarber);
+
+      // Batasan kuota harian: Max 10 Booking per capster per hari
+      if (bookedOnDate.length >= 10) {
+        timeGrid.innerHTML = `<div class="col-span-4 text-xs font-bold text-red-500 text-center py-2">Kapasitas Barber Penuh Hari Ini (Max 10)</div>`;
+        return;
+      }
+
+      // Jam operasional: 10:00 - 22:00 (Slot terakhir dapat dipesan bergantung durasi pelayanan)
+      for (let hour = 10; hour < 22; hour++) {
+        let isBooked = false;
+        const slotStart = hour;
+        const slotEnd = hour + cartDuration;
+        const timeString = `${String(hour).padStart(2, '0')}:00`;
+
+        // 1. Cek jika jam selesai melewati batas jam tutup operasional (22:00)
+        if (slotEnd > 22) {
+          continue; // Slot tidak diijinkan karena melangkahi jam tutup
         }
 
-        window.addEventListener('DOMContentLoaded', () => {
-            const todayWIB = getWIBDateString();
-            document.getElementById('booking-date').setAttribute('min', todayWIB);
-            document.getElementById('booking-date').value = todayWIB;
-            fetchExistingBookings();
+        // 2. Cek Ketentuan Minimal 1 jam sebelum booking (Khusus jika memilih Tanggal Hari Ini)
+        const bookingDateTime = new Date(`${selectedDate}T${timeString}:00`);
+        const differenceInMs = bookingDateTime - now;
+        if (differenceInMs < 3600000) { // 3.600.000 ms = 1 jam
+          continue; // Lewati jam yang melanggar aturan min 1 jam
+        }
+
+        // 3. Cek Tumpang Tindih dengan Database Google Sheets
+        bookedOnDate.forEach(b => {
+          const bookedStart = parseInt(b.waktuMulai.split(':')[0]);
+          const bookedEnd = parseInt(b.waktuSelesai.split(':')[0]);
+          
+          // Logika Overlapping: interval [slotStart, slotEnd] bertabrakan dengan [bookedStart, bookedEnd]
+          if (!(slotEnd <= bookedStart || slotStart >= bookedEnd)) {
+            isBooked = true;
+          }
         });
 
-        // Menarik data dari Google Sheet dengan sistem deteksi eror transparan & anti-cache
-        function fetchExistingBookings() {
-            if (!WEB_APP_URL || WEB_APP_URL.includes("placeholder")) {
-                document.getElementById('loading-schedule').innerHTML = `
-                    <div class="text-amber-600 p-2 bg-amber-50 rounded border border-amber-200 text-[11px]">
-                        <i class="fas fa-info-circle mr-1"></i> Harap ganti variabel <b>WEB_APP_URL</b> di baris kode HTML dengan URL Anda.
-                    </div>
-                `;
-                return;
-            }
-
-            document.getElementById('loading-schedule').classList.remove('hidden');
-            document.getElementById('schedule-container').classList.add('hidden');
-            document.getElementById('no-schedule').classList.add('hidden');
-
-            // Cache-Busting menggunakan _t=Date.now() agar browser mengambil data yang paling baru
-            fetch(`${WEB_APP_URL}?action=get&_t=${Date.now()}`)
-                .then(res => {
-                    if (!res.ok) {
-                        throw new Error("HTTP Status Eror: " + res.status);
-                    }
-                    return res.text();
-                })
-                .then(text => {
-                    try {
-                        const data = JSON.parse(text);
-                        if (data.status === "error") {
-                            throw new Error(data.message);
-                        }
-                        
-                        existingBookings = data;
-                        renderTodaySchedule();
-                        
-                        // Sinkronkan ulang slot tombol jika capster sudah sempat dipilih
-                        if (selectedCapster) {
-                            updateAvailableTimes();
-                        }
-                        
-                        document.getElementById('loading-schedule').classList.add('hidden');
-                    } catch(jsonErr) {
-                        console.error("Format Response Error:", text);
-                        if (text.includes("login") || text.includes("Google Accounts")) {
-                            throw new Error("Hak akses Google Apps Script Anda dibatasi (Butuh Login). Ganti opsi pengaturan deployment Anda menjadi 'Anyone' (Siapa Saja).");
-                        } else {
-                            throw new Error("Data Google Sheet tidak sesuai format JSON yang valid.");
-                        }
-                    }
-                })
-                .catch(err => {
-                    console.error("Gagal sinkronisasi data:", err);
-                    let cleanErrorMsg = err.message;
-                    
-                    if (err.message.includes("Failed to fetch")) {
-                        cleanErrorMsg = "Sambungan ke Google Sheets diblokir (CORS) atau terputus. Pastikan link diakhiri dengan <b>/exec</b> dan dideploy dengan akses <b>'Anyone'</b>.";
-                    }
-                    
-                    document.getElementById('loading-schedule').innerHTML = `
-                        <div class="text-red-500 p-3 bg-red-50 rounded border border-red-200 text-left">
-                            <p class="font-bold text-xs"><i class="fas fa-exclamation-circle mr-1"></i> Sinkronisasi Database Gagal</p>
-                            <p class="text-[10px] mt-1 text-gray-600 font-mono">${cleanErrorMsg}</p>
-                        </div>
-                    `;
-                });
+        const activeClass = selectedTime === timeString ? 'border-[#FFCF40] bg-[#FFCF40] text-gray-900 font-bold' : 'border-gray-100 bg-gray-50 text-gray-700 hover:border-gray-300';
+        
+        if (isBooked) {
+          timeGrid.innerHTML += `
+            <button class="py-3.5 border-2 rounded-xl text-xs font-semibold bg-gray-100 text-gray-300 border-gray-100 cursor-not-allowed" disabled>
+              ${timeString}<br><span class="text-[9px]">Terisi</span>
+            </button>
+          `;
+        } else {
+          timeGrid.innerHTML += `
+            <button onclick="selectTime('${timeString}')" class="py-3.5 border-2 rounded-xl text-xs font-semibold transition ${activeClass}">
+              ${timeString}
+            </button>
+          `;
         }
+      }
+    }
 
-        function renderTodaySchedule() {
-            const container = document.getElementById('schedule-container');
-            const emptyNotice = document.getElementById('no-schedule');
-            container.innerHTML = "";
+    // SELECT TIME SLOT
+    function selectTime(timeStr) {
+      selectedTime = timeStr;
+      generateTimeSlots();
+      validateForm();
+    }
 
-            const todayWIB = getWIBDateString();
-            const todayBookings = existingBookings.filter(b => b.date === todayWIB);
+    // SELECT PAYMENT METHOD
+    function selectPayment(method) {
+      selectedPaymentMethod = method;
+      document.querySelectorAll('.payment-card').forEach(card => {
+        card.classList.remove('border-[#FFCF40]', 'bg-amber-50/40');
+      });
+      document.getElementById(`pay-${method}`).classList.add('border-[#FFCF40]', 'bg-amber-50/40');
 
-            if (todayBookings.length === 0) {
-                container.classList.add('hidden');
-                emptyNotice.classList.remove('hidden');
-                return;
-            }
+      if (method === "QRIS") {
+        document.getElementById('qris-container').classList.remove('hidden');
+      } else {
+        document.getElementById('qris-container').classList.add('hidden');
+      }
+      validateForm();
+    }
 
-            emptyNotice.classList.add('hidden');
-            container.classList.remove('hidden');
+    // FORM VALIDATION
+    function validateForm() {
+      const name = document.getElementById('cust-name').value;
+      const wa = document.getElementById('cust-wa').value;
+      const btn = document.getElementById('submit-btn');
 
-            todayBookings.forEach(b => {
-                const item = document.createElement('div');
-                item.className = "bg-yellow-50 border border-yellow-200 rounded p-2 flex justify-between items-center";
-                item.innerHTML = `
-                    <div>
-                        <p class="font-bold text-gray-800">${b.name.substring(0, 10)}${b.name.length > 10 ? '...' : ''}</p>
-                        <p class="text-[9px] text-gray-500">Capster: ${b.capster}</p>
-                    </div>
-                    <span class="bg-yellow-accent text-gray-900 font-bold px-1.5 py-0.5 rounded text-[10px]">${b.time}</span>
-                `;
-                container.appendChild(item);
-            });
-        }
+      if (selectedBarber && selectedServices.length > 0 && selectedDate && selectedTime && selectedPaymentMethod && name && wa) {
+        btn.disabled = false;
+        btn.classList.remove('bg-gray-300', 'text-gray-500', 'cursor-not-allowed');
+        btn.classList.add('bg-accent', 'text-gray-900');
+      } else {
+        btn.disabled = true;
+        btn.classList.add('bg-gray-300', 'text-gray-500', 'cursor-not-allowed');
+        btn.classList.remove('bg-accent', 'text-gray-900');
+      }
+    }
 
-        function selectCapster(capsterName) {
-            selectedCapster = capsterName;
-            selectedServices = [];
-            selectedTime = "";
+    // EVENT LISTENERS UNTUK INPUT DATA
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('cust-name').addEventListener('input', validateForm);
+      document.getElementById('cust-wa').addEventListener('input', validateForm);
+    });
 
-            document.querySelectorAll('.capster-card').forEach(card => {
-                card.classList.remove('border-yellow-accent', 'bg-yellow-50');
-                card.classList.add('border-transparent', 'bg-white');
-            });
-            document.getElementById(`capster-${capsterName}`).classList.add('border-yellow-accent', 'bg-yellow-50');
+    // SUBMIT DATA TO GOOGLE SHEET
+    function submitBooking() {
+      if(API_URL === "URL_WEB_APP_ANDA_DISINI") {
+        alert("Mohon tautkan URL Web App Google Apps Script Anda terlebih dahulu!");
+        return;
+      }
 
-            renderCatalog(capsterName);
+      const name = document.getElementById('cust-name').value;
+      const wa = document.getElementById('cust-wa').value;
+      
+      const btn = document.getElementById('submit-btn');
+      btn.innerText = "Memproses...";
+      btn.disabled = true;
 
-            document.getElementById('booking-form-section').classList.remove('hidden');
-            document.getElementById('catalog-hint').innerText = `Layanan dari Capster ${capsterName}:`;
+      // Hitung waktu selesai
+      const startHour = parseInt(selectedTime.split(':')[0]);
+      const endHour = startHour + getCartMaxDuration();
+      const endTimeString = `${String(endHour).padStart(2, '0')}:00`;
 
-            updateAvailableTimes();
-            updateCart();
-        }
+      const listServices = selectedServices.map(s => s.name).join(', ');
+      const totalHarga = selectedServices.reduce((sum, s) => sum + s.price, 0);
 
-        function renderCatalog(capsterName) {
-            const servicesList = document.getElementById('services-list');
-            servicesList.innerHTML = "";
+      const payload = {
+        nama: name,
+        wa: wa,
+        barber: selectedBarber,
+        tanggal: selectedDate,
+        waktuMulai: selectedTime,
+        waktuSelesai: endTimeString,
+        layanan: listServices,
+        totalHarga: totalHarga,
+        metodePembayaran: selectedPaymentMethod
+      };
 
-            const services = database[capsterName];
-            services.forEach(srv => {
-                const item = document.createElement('div');
-                item.className = "flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg hover:border-yellow-accent transition cursor-pointer";
-                item.setAttribute('onclick', `toggleService('${srv.id}', '${srv.name}', ${srv.price})`);
-                item.id = `srv-card-${srv.id}`;
-                item.innerHTML = `
-                    <div class="flex items-center space-x-3">
-                        <input type="checkbox" id="check-${srv.id}" class="rounded text-amber-500 focus:ring-amber-400 w-4 h-4 pointer-events-none">
-                        <div>
-                            <p class="font-bold text-xs text-gray-800">${srv.name}</p>
-                            <p class="text-[11px] text-amber-600 font-medium">Rp ${srv.price.toLocaleString('id-ID')}</p>
-                        </div>
-                    </div>
-                `;
-                servicesList.appendChild(item);
-            });
-        }
-
-        function toggleService(id, name, price) {
-            const checkbox = document.getElementById(`check-${id}`);
-            const card = document.getElementById(`srv-card-${id}`);
-            const index = selectedServices.findIndex(item => item.id === id);
-
-            if (index > -1) {
-                selectedServices.splice(index, 1);
-                if (checkbox) checkbox.checked = false;
-                if (card) card.classList.remove('bg-yellow-50', 'border-yellow-accent');
-            } else {
-                selectedServices.push({ id, name, price });
-                if (checkbox) checkbox.checked = true;
-                if (card) card.classList.add('bg-yellow-50', 'border-yellow-accent');
-            }
-            updateCart();
-        }
-
-        function updateCart() {
-            const totalElement = document.getElementById('cart-total');
-            const summaryElement = document.getElementById('selected-summary');
-            const total = selectedServices.reduce((sum, item) => sum + item.price, 0);
-            
-            totalElement.innerText = `Rp ${total.toLocaleString('id-ID')}`;
-
-            if (selectedServices.length === 0) {
-                summaryElement.innerText = "Belum memilih layanan";
-                return;
-            }
-            summaryElement.innerText = `${selectedCapster}: ${selectedServices.map(s => s.name).join(', ')}`;
-        }
-
-        function updateAvailableTimes() {
-            const dateInput = document.getElementById('booking-date').value;
-            const grid = document.getElementById('time-slots-grid');
-            grid.innerHTML = "";
-
-            if (!selectedCapster || !dateInput) return;
-
-            const hours = [
-                "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", 
-                "16:00", "17:00", "18:00", "19:00", "20:00", "21:00"
-            ];
-
-            const now = new Date();
-            const todayWIB = getWIBDateString();
-            const isToday = (dateInput === todayWIB);
-
-            const capsterDailyBookings = existingBookings.filter(b => b.capster === selectedCapster && b.date === dateInput);
-            const totalBookingsToday = capsterDailyBookings.length;
-
-            hours.forEach(time => {
-                const button = document.createElement('button');
-                button.type = "button";
-                button.className = "p-2 border rounded text-xs font-semibold text-center transition ";
-                button.innerText = time;
-
-                // Aturan 1: Minimal 1 jam sebelum booking (khusus booking hari ini)
-                let isTooEarly = false;
-                if (isToday) {
-                    const [h, m] = time.split(':').map(Number);
-                    
-                    const utcNow = now.getTime() + (now.getTimezoneOffset() * 60000);
-                    const wibNow = new Date(utcNow + (3600000 * 7));
-                    
-                    const slotTime = new Date(wibNow.getTime());
-                    slotTime.setHours(h, m, 0, 0);
-
-                    const oneHourLater = new Date(wibNow.getTime() + (60 * 60 * 1000));
-                    if (slotTime < oneHourLater) {
-                        isTooEarly = true;
-                    }
-                }
-
-                // Aturan 2: Maksimal 1 orang per slot jam per capster
-                const isAlreadyBooked = capsterDailyBookings.some(b => b.time === time);
-
-                // Aturan 3: Maksimal 10 booking per capster dalam 1 hari
-                const isLimitReached = totalBookingsToday >= 10;
-
-                if (isTooEarly || isAlreadyBooked || isLimitReached) {
-                    button.disabled = true;
-                    button.className += "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed line-through";
-                } else {
-                    // Beri penanda warna kuning jika waktu tersebut adalah waktu yang sedang dipilih
-                    if (selectedTime === time) {
-                        button.className += "bg-yellow-accent text-gray-950 border-yellow-accent font-bold";
-                    } else {
-                        button.className += "bg-white text-gray-800 hover:border-yellow-accent hover:bg-yellow-50";
-                    }
-                    button.onclick = () => selectTimeSlot(time, button);
-                }
-                grid.appendChild(button);
-            });
-        }
-
-        function selectTimeSlot(time, element) {
-            selectedTime = time;
-            document.querySelectorAll('#time-slots-grid button').forEach(btn => {
-                if (!btn.disabled) {
-                    btn.className = "p-2 border rounded text-xs font-semibold text-center transition bg-white text-gray-800 hover:border-yellow-accent hover:bg-yellow-50";
-                }
-            });
-            element.className = "p-2 border rounded text-xs font-bold text-center transition bg-yellow-accent text-gray-950 border-yellow-accent";
-        }
-
-        function toggleQRIS(show) {
-            const qrisBox = document.getElementById('qris-container');
-            if (show) qrisBox.classList.remove('hidden');
-            else qrisBox.classList.add('hidden');
-        }
-
-        function submitBooking() {
-            const name = document.getElementById('cust-name').value.trim();
-            const whatsapp = document.getElementById('cust-wa').value.trim();
-            const date = document.getElementById('booking-date').value;
-            const payment = document.querySelector('input[name="payment_method"]:checked').value;
-            const total = selectedServices.reduce((sum, item) => sum + item.price, 0);
-
-            if (!selectedCapster) return alert("Harap pilih Capster.");
-            if (selectedServices.length === 0) return alert("Pilih minimal 1 layanan.");
-            if (!name || !whatsapp) return alert("Nama dan WhatsApp wajib diisi.");
-            if (!selectedTime) return alert("Pilih jam kedatangan.");
-
-            const servicesText = selectedServices.map(s => s.name).join(', ');
-
-            alert("Menyimpan booking Anda, harap tunggu konfirmasi...");
-
-            const urlParams = new URLSearchParams({
-                action: "add",
-                name: name,
-                whatsapp: whatsapp,
-                capster: selectedCapster,
-                services: servicesText,
-                date: date,
-                time: selectedTime,
-                total: total,
-                payment: payment
-            });
-
-            fetch(`${WEB_APP_URL}?${urlParams.toString()}`)
-                .then(res => res.json())
-                .then(response => {
-                    if (response.status === "success") {
-                        const waMsg = `Halo S ONE BARBERSHOP! saya telah melakukan booking online:\n\n` +
-                                      `Nama: ${name}\n` +
-                                      `WhatsApp: ${whatsapp}\n` +
-                                      `Capster: ${selectedCapster}\n` +
-                                      `Layanan: ${servicesText}\n` +
-                                      `Waktu: ${date} / Jam ${selectedTime} WIB\n` +
-                                      `Total: Rp ${total.toLocaleString('id-ID')}\n` +
-                                      `Metode Pembayaran: ${payment}\n\n` +
-                                      `*Toleransi Keterlambatan Maksimal 15 Menit.*`;
-                        
-                        window.location.href = `https://wa.me/6281545878413?text=${encodeURIComponent(waMsg)}`;
-                    } else {
-                        // Jalankan aksi penguncian jika backend mendeteksi bentrok jadwal
-                        alert("Gagal memproses booking: " + response.message);
-                        
-                        // Tarik ulang data jadwal terisi dari Google Sheets secara langsung
-                        fetchExistingBookings();
-                        
-                        // Reset variabel waktu terpilih karena slot tersebut sudah terkunci
-                        selectedTime = "";
-                    }
-                })
-                .catch(err => {
-                    console.error("Error:", err);
-                    alert("Koneksi lambat, mengalihkan Anda ke WhatsApp Admin secara manual...");
-                    window.location.href = `https://wa.me/6281545878413?text=Halo%20S%20ONE,%20saya%20ingin%20booking%20manual%20karena%20sistem%20sedang%20padat.`;
-                });
-        }
-    </script>
+      fetch(API_URL, {
+        method: "POST",
+        mode: "no-cors", // menggunakan mode no-cors agar pengiriman data mulus melewati proteksi CORS browser
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      })
+      .then(() => {
+        // Tampilkan Sukses Popup
+        document.getElementById('res-id').innerText = "S1B-" + Math.floor(Math.random() * 900000 + 100000);
+        document.getElementById('res-barber').innerText = selectedBarber;
+        document.getElementById('res-time').innerText = `${selectedDate} (${selectedTime} - ${endTimeString} WIB)`;
+        document.getElementById('res-total').innerText = "Rp " + totalHarga.toLocaleString('id-ID');
+        
+        document.getElementById('success-modal').classList.remove('hidden');
+      })
+      .catch(err => {
+        alert("Terjadi kesalahan koneksi. Silakan coba lagi.");
+        btn.innerText = "Booking Sekarang";
+        btn.disabled = false;
+        console.error(err);
+      });
+    }
+  </script>
 </body>
 </html>
