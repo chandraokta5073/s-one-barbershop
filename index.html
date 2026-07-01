@@ -475,4 +475,88 @@
       if (method === "QRIS") {
         document.getElementById('qris-container').classList.remove('hidden');
       } else {
-        document.getEle
+        document.getElementById('qris-container').classList.add('hidden');
+      }
+      validateForm();
+    }
+
+    function validateForm() {
+      const name = document.getElementById('cust-name').value;
+      const wa = document.getElementById('cust-wa').value;
+      const btn = document.getElementById('submit-btn');
+
+      if (selectedBarber && selectedServices.length > 0 && selectedDate && selectedTime && selectedPaymentMethod && name && wa) {
+        btn.disabled = false;
+        btn.classList.remove('bg-gray-300', 'text-gray-500', 'cursor-not-allowed');
+        btn.classList.add('bg-accent', 'text-gray-900');
+      } else {
+        btn.disabled = true;
+        btn.classList.add('bg-gray-300', 'text-gray-500', 'cursor-not-allowed');
+        btn.classList.remove('bg-accent', 'text-gray-900');
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('cust-name').addEventListener('input', validateForm);
+      document.getElementById('cust-wa').addEventListener('input', validateForm);
+    });
+
+    // PENGIRIMAN DATA INSTAN DENGAN METODE BYPASS CORS
+    function submitBooking() {
+      if(API_URL === "GANTI_DENGAN_URL_WEB_APP_ANDA") {
+        alert("Silakan masukkan URL Web App Google Apps Script Anda terlebih dahulu!");
+        return;
+      }
+
+      const name = document.getElementById('cust-name').value;
+      const wa = document.getElementById('cust-wa').value;
+      
+      const btn = document.getElementById('submit-btn');
+      btn.innerText = "Memproses...";
+      btn.disabled = true;
+
+      const startHour = parseInt(selectedTime.split(':')[0]);
+      const endHour = startHour + getCartMaxDuration();
+      const endTimeString = `${String(endHour).padStart(2, '0')}:00`;
+
+      const listServices = selectedServices.map(s => s.name).join(', ');
+      const totalHarga = selectedServices.reduce((sum, s) => sum + s.price, 0);
+
+      // Konversi payload ke format x-www-form-urlencoded
+      const formData = new URLSearchParams();
+      formData.append('nama', name);
+      formData.append('wa', wa);
+      formData.append('barber', selectedBarber);
+      formData.append('tanggal', selectedDate);
+      formData.append('waktuMulai', selectedTime);
+      formData.append('waktuSelesai', endTimeString);
+      formData.append('layanan', listServices);
+      formData.append('totalHarga', totalHarga);
+      formData.append('metodePembayaran', selectedPaymentMethod);
+
+      const generatedId = "S1B-" + Math.floor(Math.random() * 900000 + 100000);
+
+      fetch(API_URL, {
+        method: "POST",
+        mode: "no-cors",
+        body: formData
+      })
+      .then(() => {
+        document.getElementById('res-id').innerText = generatedId;
+        document.getElementById('res-barber').innerText = selectedBarber;
+        document.getElementById('res-time').innerText = `${selectedDate} (${selectedTime} - ${endTimeString} WIB)`;
+        document.getElementById('res-total').innerText = "Rp " + totalHarga.toLocaleString('id-ID');
+        document.getElementById('res-pay').innerText = selectedPaymentMethod;
+        
+        document.getElementById('success-modal').classList.remove('hidden');
+      })
+      .catch(err => {
+        alert("Koneksi gagal. Silakan periksa jaringan internet Anda.");
+        btn.innerText = "Booking Sekarang";
+        btn.disabled = false;
+        console.error(err);
+      });
+    }
+  </script>
+</body>
+</html>
