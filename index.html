@@ -203,7 +203,7 @@
     let selectedPaymentMethod = "";
     let databaseBookings = [];
 
-    // FUNGSI PERBAIKAN 1: Menghitung format tanggal YYYY-MM-DD secara konsisten di semua browser
+    // Fungsi membuat format tanggal YYYY-MM-DD secara konsisten di semua browser
     function getTodayStr() {
       const today = new Date();
       const yyyy = today.getFullYear();
@@ -212,7 +212,7 @@
       return `${yyyy}-${mm}-${dd}`;
     }
 
-    // FUNGSI PERBAIKAN 2: Menyetarakan semua jenis penulisan tanggal dari Google Sheets menjadi YYYY-MM-DD
+    // Fungsi menyetarakan semua jenis penulisan tanggal dari Google Sheets menjadi YYYY-MM-DD
     function normalizeDate(dateInput) {
       if (!dateInput) return "";
       
@@ -242,12 +242,28 @@
       return cleanInput;
     }
 
-    // FUNGSI PERBAIKAN 3: Membaca angka jam dengan aman meskipun dipisahkan titik atau titik dua
+    // PERBAIKAN BUG NaN: Jika jam tidak valid, kembalikan null agar tidak memblokir semua slot
     function parseHour(timeStr) {
-      if (!timeStr) return 0;
-      const cleanStr = timeStr.toString().replace('.', ':');
+      if (!timeStr) return null;
+      const cleanStr = timeStr.toString().replace('.', ':').trim();
       const parts = cleanStr.split(':');
-      return parseInt(parts[0], 10);
+      const hour = parseInt(parts[0], 10);
+      return isNaN(hour) ? null : hour;
+    }
+
+    // PERBAIKAN SAFARI: Membuat objek Date lokal tanpa string ISO gabungan untuk kompatibilitas penuh iOS
+    function createLocalDate(dateStr, timeStr) {
+      const dateParts = dateStr.split('-');
+      const timeParts = timeStr.split(':');
+      
+      const year = parseInt(dateParts[0], 10);
+      const month = parseInt(dateParts[1], 10) - 1; 
+      const day = parseInt(dateParts[2], 10);
+      
+      const hour = parseInt(timeParts[0], 10);
+      const minute = parseInt(timeParts[1], 10);
+      
+      return new Date(year, month, day, hour, minute, 0);
     }
 
     window.onload = function() {
@@ -274,7 +290,7 @@
         });
     }
 
-    // Tampilkan Jadwal Hari Ini di Bagian Atas (Sudah diperbaiki dengan normalisasi tanggal)
+    // Tampilkan Jadwal Hari Ini
     function renderTodaySchedule() {
       const todayStr = getTodayStr(); 
       
@@ -349,7 +365,7 @@
       if(selectedDate) generateTimeSlots(); 
     }
 
-    // Update Keranjang & Estimasi Total
+    // Update Keranjang
     function updateCart() {
       let total = 0;
       let maxDuration = 0;
@@ -392,7 +408,7 @@
       return max;
     }
 
-    // Menghitung & Membangun Slot Jam yang Tersedia (Sudah diperbaiki dengan normalisasi)
+    // Membangun Slot Jam yang Tersedia
     function generateTimeSlots() {
       const timeGrid = document.getElementById('time-grid');
       timeGrid.innerHTML = "";
@@ -402,7 +418,6 @@
       
       const targetDateNormalized = normalizeDate(selectedDate);
       
-      // Filter data booking mencocokkan tanggal yang dinormalisasi & barber terpilih
       const bookedOnDate = databaseBookings.filter(b => {
         return normalizeDate(b.tanggal) === targetDateNormalized && b.barber === selectedBarber;
       });
@@ -424,17 +439,22 @@
           continue; 
         }
 
-        // Aturan 2: Minimal booking 1 jam sebelum kedatangan (khusus hari ini)
-        const bookingDateTime = new Date(`${selectedDate}T${timeString}:00`);
+        // Aturan 2: Minimal booking 1 jam sebelum kedatangan (menggunakan fungsi Safari-safe)
+        const bookingDateTime = createLocalDate(selectedDate, timeString);
         const differenceInMs = bookingDateTime - now;
         if (differenceInMs < 3600000) { 
           continue; 
         }
 
-        // Aturan 3: Cek tabrakan jam dengan database Google Sheet (Jam dinormalisasi menggunakan parseHour)
+        // Aturan 3: Cek tabrakan jam
         bookedOnDate.forEach(b => {
           const bookedStart = parseHour(b.waktuMulai);
           const bookedEnd = parseHour(b.waktuSelesai);
+          
+          // Lewati pencocokan baris jika data jam di sheet kosong atau tidak valid
+          if (bookedStart === null || bookedEnd === null) {
+            return;
+          }
           
           if (!(slotEnd <= bookedStart || slotStart >= bookedEnd)) {
             isBooked = true;
@@ -501,7 +521,7 @@
       document.getElementById('cust-wa').addEventListener('input', validateForm);
     });
 
-    // PENGIRIMAN DATA INSTAN DENGAN METODE BYPASS CORS
+    // PENGIRIMAN DATA INSTAN
     function submitBooking() {
       if(API_URL === "GANTI_DENGAN_URL_WEB_APP_ANDA") {
         alert("Silakan masukkan URL Web App Google Apps Script Anda terlebih dahulu!");
@@ -522,7 +542,6 @@
       const listServices = selectedServices.map(s => s.name).join(', ');
       const totalHarga = selectedServices.reduce((sum, s) => sum + s.price, 0);
 
-      // Konversi payload ke format x-www-form-urlencoded
       const formData = new URLSearchParams();
       formData.append('nama', name);
       formData.append('wa', wa);
